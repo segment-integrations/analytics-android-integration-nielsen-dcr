@@ -1,6 +1,5 @@
 analytics-android-integration-nielsen-dcr
 ======================================
-
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.segment.analytics.android.integrations/nielsendcr/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.segment.analytics.android.integrations/nielsendcr)
 [![Javadocs](http://javadoc-badge.appspot.com/com.segment.analytics.android.integrations/nielsendcr.svg?label=javadoc)](http://javadoc-badge.appspot.com/com.segment.analytics.android.integrations/nielsendcr)
 
