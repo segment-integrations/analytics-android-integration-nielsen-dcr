@@ -37,7 +37,9 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
   }
 
   private void startPlayheadTimer(final Properties properties, final AppSdk nielsen) {
-    if (playheadTimer != null) { return; }
+    if (playheadTimer != null) {
+      return;
+    }
     playheadTimer = new Timer();
     playheadPosition = properties.getInt("position", 0);
     monitorHeadPos =
@@ -112,7 +114,7 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
       contentMetadata.put("pipmode", "false");
     }
 
-    if(options.containsKey("crossId1")) {
+    if (options.containsKey("crossId1")) {
       String crossId1 = String.valueOf(options.get("crossId1"));
       contentMetadata.put("crossId1", crossId1);
     }
@@ -197,7 +199,7 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
       adContentMetadata.put("pipmode", "false");
     }
 
-    if(options.containsKey("crossId1")) {
+    if (options.containsKey("crossId1")) {
       String crossId1 = String.valueOf(options.get("crossId1"));
       adContentMetadata.put("crossId1", crossId1);
     }
@@ -411,10 +413,9 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
     JSONObject metadata = new JSONObject();
 
     Map<String, Object> nielsenOptions = screen.integrations().getValueMap("nielsen-dcr");
-    if(isNullOrEmpty(nielsenOptions)) {
+    if (isNullOrEmpty(nielsenOptions)) {
       nielsenOptions = Collections.emptyMap();
     }
-
 
     try {
       metadata.put("name", name);
@@ -431,11 +432,11 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
       if (nielsenOptions.containsKey("segC")) {
         String segC = String.valueOf(nielsenOptions.get("segC"));
         metadata.put("segC", segC);
-      }else {
+      } else {
         metadata.put("segC", "");
       }
 
-      if(nielsenOptions.containsKey("crossId1")) {
+      if (nielsenOptions.containsKey("crossId1")) {
         String crossId1 = String.valueOf(nielsenOptions.get("crossId1"));
         metadata.put("crossId1", crossId1);
       }
@@ -443,11 +444,9 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
     } catch (JSONException e) {
       e.printStackTrace();
       logger.verbose("Error tracking Video Content:", e);
-
     }
 
     appSdk.loadMetadata(metadata);
     logger.verbose("appSdk.loadMetadata(%s)", metadata);
-
   }
 }
