@@ -9,7 +9,7 @@ import com.segment.analytics.integrations.Integration;
 import com.segment.analytics.integrations.Logger;
 import com.segment.analytics.integrations.ScreenPayload;
 import com.segment.analytics.integrations.TrackPayload;
-import com.nielsen.app.sdk.*;
+import com.nielsen.app.sdk.AppSdk;
 
 import java.util.Calendar;
 import java.util.Collections;
