@@ -15,7 +15,11 @@ To install the Segment-Nielsen-SCR integration, add the following to your gradle
 compile 'com.segment.analytics.android.integrations:nielsendcr:+'
 ```
 
-Nielsen does not host their SDK on Maven, so you must manually include their framework after downloading it from the [Nielsen site](https://engineeringforum.nielsen.com/sdk/developers/download-sdk-2.php).
+Nielsen does not host their SDK on Maven, so you must manually include their framework. You must manually include the framework in your project. Navigate to [Nielsen's Engineering Site](https://engineeringportal.nielsen.com/docs/Main_Page) and download the following Video framework:
+
+![](http://g.recordit.co/aQqjUiDvAB.gif)
+
+There will be an NDA to sign prior to accessing the download. Nielsen requires you fill out your company info and have a Nielsen representative before getting started.
 
 ## Usage
 
