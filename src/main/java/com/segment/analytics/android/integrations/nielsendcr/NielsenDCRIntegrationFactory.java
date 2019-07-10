@@ -71,6 +71,11 @@ class NielsenDCRIntegrationFactory implements Integration.Factory {
               .put("appname", appname)
               .put("appversion", appversion)
               .put("sfcode", sfCode);
+
+      if (settings.getBoolean("nolDevDebug", false)) {
+        appSdkConfig.put("nol_devDebug", "DEBUG");
+      }
+
       AppSdk appSdk = appSDKFactory.create(appContext, appSdkConfig, null);
       logger.verbose("new AppSdk(%s),", appSdkConfig.toString(2));
 
