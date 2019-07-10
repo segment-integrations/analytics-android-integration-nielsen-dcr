@@ -1,16 +1,28 @@
 package com.segment.analytics.android.integrations.nielsendcr;
 
 
+import android.app.Application;
+import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isA;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.validateMockitoUsage;
 import static org.mockito.Mockito.verify;
 
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatcher;
 import com.nielsen.app.sdk.AppSdk;
+import com.nielsen.app.sdk.IAppNotifier;
 import com.segment.analytics.Analytics;
 
 import com.segment.analytics.Properties;
+import com.segment.analytics.ValueMap;
 import com.segment.analytics.integrations.Logger;
 import com.segment.analytics.integrations.ScreenPayload;
 import com.segment.analytics.integrations.TrackPayload;
@@ -24,6 +36,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
@@ -34,21 +47,58 @@ import org.skyscreamer.jsonassert.JSONCompareMode;
 @Config(manifest = Config.NONE)
 public class NielsenDCRTest {
 
+  @Mock com.segment.analytics.Analytics analytics;
   @Mock AppSdk nielsen;
+  @Mock NielsenDCRIntegrationFactory.AppSDKFactory appFactory;
+  @Mock Application application;
+  @Mock Context context;
+  @Mock PackageManager packageManager;
   private Logger logger;
   private NielsenDCRIntegration integration;
+  private NielsenDCRIntegrationFactory factory;
 
   @Before
-  public void setUp() {
+  public void setUp() throws PackageManager.NameNotFoundException {
     MockitoAnnotations.initMocks(this);
 
+    PackageInfo info = new PackageInfo();
+    info.packageName = "test";
+    info.versionName = "test";
+
+    Mockito.when(analytics.getApplication()).thenReturn(application);
+    Mockito.when(analytics.logger("Nielsen DCR")).thenReturn(Logger.with(Analytics.LogLevel.VERBOSE));
+    Mockito.when(application.getApplicationContext()).thenReturn(context);
+    Mockito.when(context.getPackageManager()).thenReturn(packageManager);
+    Mockito.when(context.getApplicationContext()).thenReturn(context);
+    Mockito.when(context.getPackageName()).thenReturn("test");
+    Mockito.when(packageManager.getPackageInfo("test", 0)).thenReturn(info);
     logger = Logger.with(Analytics.LogLevel.DEBUG);
     integration = new NielsenDCRIntegration(nielsen, logger);
+    factory = new NielsenDCRIntegrationFactory(appFactory);
   }
 
   @After
   public void validate() {
     validateMockitoUsage();
+  }
+
+  @Test
+  public void appSdkConfig() throws JSONException {
+    ValueMap settings = new ValueMap();
+    settings.put("appId", "12345");
+    settings.put("sfCode", true);
+    settings.put("nolDevDebug", true);
+
+    factory.create(settings, analytics);
+
+    JSONObject expectedConfig = new JSONObject()
+            .put("appid", "12345")
+            .put("appname", "test")
+            .put("appversion", "test")
+            .put("nol_devDebug", "DEBUG")
+            .put("sfcode", "dcr");
+
+    verify(appFactory).create(eq(context), jsonEq(expectedConfig), (IAppNotifier) isNull());
   }
 
   @Test
