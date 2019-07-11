@@ -6,16 +6,13 @@ import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.validateMockitoUsage;
 import static org.mockito.Mockito.verify;
 
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatcher;
 import com.nielsen.app.sdk.AppSdk;
 import com.nielsen.app.sdk.IAppNotifier;
@@ -144,6 +141,82 @@ public class NielsenDCRTest {
   }
 
   @Test
+  public void videoContentStarted() throws JSONException {
+
+    Map<String, Object> nielsenOptions = new LinkedHashMap<>();
+    nielsenOptions.put("segB", "segmentB");
+    nielsenOptions.put("crossId2", "id");
+
+    integration.track(
+            new TrackPayload.Builder().anonymousId("foo").event("Video Content Started").properties(new Properties() //
+                    .putValue("assetId", 123214)
+                    .putValue("title", "Look Who's Purging Now")
+                    .putValue("season", 2)
+                    .putValue("episode", 9)
+                    .putValue("genre", "cartoon")
+                    .putValue("program", "Rick and Morty")
+                    .putValue("channel", "cartoon network")
+                    .putValue("publisher", "Turner Broadcasting System")
+                    .putValue("fullEpisode", true)
+                    .putValue("podId", "segment A")
+                    .putValue("playbackPosition", 70))
+                    .integration("nielsen-dcr", nielsenOptions)
+                    .build());
+
+    JSONObject expected = new JSONObject();
+    expected.put("assetid", "123214");
+    expected.put("title", "Look Who's Purging Now");
+    expected.put("program", "Rick and Morty");
+    expected.put("segB", "segmentB");
+    expected.put("pipmode", "false");
+    expected.put("isfullepisode", "y");
+    expected.put("type", "content");
+    expected.put("adloadtype", "1");
+    expected.put("hasAds", "0");
+    expected.put("crossId2", "id");
+
+    verify(nielsen).loadMetadata(jsonEq(expected));
+  }
+
+  @Test
+  public void videoContentStarted_hasAds() throws JSONException {
+
+    Map<String, Object> nielsenOptions = new LinkedHashMap<>();
+    nielsenOptions.put("segB", "segmentB");
+    nielsenOptions.put("hasAds", true);
+
+    integration.track(
+            new TrackPayload.Builder().anonymousId("foo").event("Video Content Started").properties(new Properties() //
+                    .putValue("assetId", 123214)
+                    .putValue("title", "Look Who's Purging Now")
+                    .putValue("season", 2)
+                    .putValue("episode", 9)
+                    .putValue("genre", "cartoon")
+                    .putValue("program", "Rick and Morty")
+                    .putValue("channel", "cartoon network")
+                    .putValue("publisher", "Turner Broadcasting System")
+                    .putValue("fullEpisode", true)
+                    .putValue("podId", "segment A")
+                    .putValue("playbackPosition", 70))
+                    .integration("nielsen-dcr", nielsenOptions)
+                    .build());
+
+    JSONObject expected = new JSONObject();
+    expected.put("assetid", "123214");
+    expected.put("title", "Look Who's Purging Now");
+    expected.put("program", "Rick and Morty");
+    expected.put("segB", "segmentB");
+    expected.put("pipmode", "false");
+    expected.put("isfullepisode", "y");
+    expected.put("type", "content");
+    expected.put("adloadtype", "1");
+    expected.put("hasAds", "1");
+
+    verify(nielsen).loadMetadata(jsonEq(expected));
+  }
+
+
+  @Test
   public void videoPlaybackResumed() throws JSONException {
 
     integration.track(
@@ -162,41 +235,6 @@ public class NielsenDCRTest {
     expected.put("mediaURL", "");
 
     verify(nielsen).play(jsonEq(expected));
-  }
-
-  @Test
-  public void videoContentStarted() throws JSONException {
-
-    Map<String, Object> nielsenOptions = new LinkedHashMap<>();
-    nielsenOptions.put("segB", "segmentB");
-
-    integration.track(
-        new TrackPayload.Builder().anonymousId("foo").event("Video Content Started").properties(new Properties() //
-            .putValue("assetId", 123214)
-            .putValue("title", "Look Who's Purging Now")
-            .putValue("season", 2)
-            .putValue("episode", 9)
-            .putValue("genre", "cartoon")
-            .putValue("program", "Rick and Morty")
-            .putValue("channel", "cartoon network")
-            .putValue("publisher", "Turner Broadcasting System")
-            .putValue("fullEpisode", true)
-            .putValue("podId", "segment A")
-            .putValue("playbackPosition", 70))
-        .integration("nielsen-dcr", nielsenOptions)
-        .build());
-
-    JSONObject expected = new JSONObject();
-    expected.put("assetid", "123214");
-    expected.put("title", "Look Who's Purging Now");
-    expected.put("program", "Rick and Morty");
-    expected.put("segB", "segmentB");
-    expected.put("pipmode", "false");
-    expected.put("isfullepisode", "y");
-    expected.put("type", "content");
-    expected.put("adloadtype", "1");
-
-    verify(nielsen).loadMetadata(jsonEq(expected));
   }
 
   @Test

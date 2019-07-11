@@ -119,6 +119,11 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
       contentMetadata.put("crossId1", crossId1);
     }
 
+    if (options.containsKey("crossId2")) {
+      String crossId2 = String.valueOf(options.get("crossId2"));
+      contentMetadata.put("crossId2", crossId2);
+    }
+
     if (options.containsKey("segB")) {
       String segB = String.valueOf(options.get("segB"));
       contentMetadata.put("segB", segB);
@@ -157,6 +162,12 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
       contentMetadata.put("adloadtype", "2");
     } else {
       contentMetadata.put("adloadtype", "1");
+    }
+
+    if (options.containsKey("hasAds") && "true".equals(String.valueOf(options.get("hasAds")))) {
+      contentMetadata.put("hasAds", "1");
+    } else {
+      contentMetadata.put("hasAds", "0");
     }
 
     boolean fullEpisodeStatus = properties.getBoolean("fullEpisode", false);
@@ -204,6 +215,11 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
       adContentMetadata.put("crossId1", crossId1);
     }
 
+    if (options.containsKey("crossId2")) {
+      String crossId2 = String.valueOf(options.get("crossId2"));
+      adContentMetadata.put("crossId2", crossId2);
+    }
+
     if (options.containsKey("segB")) {
       String segB = String.valueOf(options.get("segB"));
       adContentMetadata.put("segB", segB);
@@ -242,6 +258,12 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
       adContentMetadata.put("adloadtype", "2");
     } else {
       adContentMetadata.put("adloadtype", "1");
+    }
+
+    if (options.containsKey("hasAds") && "true".equals(String.valueOf(options.get("hasAds")))) {
+      adContentMetadata.put("hasAds", "1");
+    } else {
+      adContentMetadata.put("hasAds", "0");
     }
 
     boolean fullEpisodeStatus = properties.getBoolean("fullEpisode", false);
