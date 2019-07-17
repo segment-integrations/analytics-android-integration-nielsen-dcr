@@ -13,6 +13,7 @@ import static org.mockito.Mockito.validateMockitoUsage;
 import static org.mockito.Mockito.verify;
 
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatcher;
 import com.nielsen.app.sdk.AppSdk;
 import com.nielsen.app.sdk.IAppNotifier;
@@ -25,6 +26,7 @@ import com.segment.analytics.integrations.ScreenPayload;
 import com.segment.analytics.integrations.TrackPayload;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -53,6 +55,7 @@ public class NielsenDCRTest {
   private Logger logger;
   private NielsenDCRIntegration integration;
   private NielsenDCRIntegrationFactory factory;
+  private NielsenDCRIntegration.Settings settings;
 
   @Before
   public void setUp() throws PackageManager.NameNotFoundException {
@@ -62,6 +65,8 @@ public class NielsenDCRTest {
     info.packageName = "test";
     info.versionName = "test";
 
+    settings = new NielsenDCRIntegration.Settings();
+
     Mockito.when(analytics.getApplication()).thenReturn(application);
     Mockito.when(analytics.logger("Nielsen DCR")).thenReturn(Logger.with(Analytics.LogLevel.VERBOSE));
     Mockito.when(application.getApplicationContext()).thenReturn(context);
@@ -70,7 +75,7 @@ public class NielsenDCRTest {
     Mockito.when(context.getPackageName()).thenReturn("test");
     Mockito.when(packageManager.getPackageInfo("test", 0)).thenReturn(info);
     logger = Logger.with(Analytics.LogLevel.DEBUG);
-    integration = new NielsenDCRIntegration(nielsen, logger);
+    integration = new NielsenDCRIntegration(nielsen, settings, logger);
     factory = new NielsenDCRIntegrationFactory(appFactory);
   }
 
@@ -157,6 +162,8 @@ public class NielsenDCRTest {
                     .putValue("program", "Rick and Morty")
                     .putValue("channel", "cartoon network")
                     .putValue("publisher", "Turner Broadcasting System")
+                    .putValue("clientId", "myClient")
+                    .putValue("subbrand", "myBrand")
                     .putValue("fullEpisode", true)
                     .putValue("podId", "segment A")
                     .putValue("playbackPosition", 70))
@@ -174,6 +181,57 @@ public class NielsenDCRTest {
     expected.put("adloadtype", "1");
     expected.put("hasAds", "0");
     expected.put("crossId2", "id");
+    expected.put("clientId", "myClient");
+    expected.put("subbrand", "myBrand");
+
+    verify(nielsen).loadMetadata(jsonEq(expected));
+  }
+
+  @Test
+  public void videoContentStarted_settings() throws JSONException {
+
+    settings.assetIdPropertyName = "customAssetId";
+    settings.clientIdPropertyName = "customClientId";
+    settings.subbrandPropertyName = "customSubbrand";
+
+    Map<String, Object> nielsenOptions = new LinkedHashMap<>();
+    nielsenOptions.put("segB", "segmentB");
+    nielsenOptions.put("crossId2", "id");
+
+    integration.track(
+            new TrackPayload.Builder().anonymousId("foo").event("Video Content Started").properties(new Properties() //
+                    .putValue("assetId", 123214)
+                    .putValue("customAssetId", 1)
+                    .putValue("title", "Look Who's Purging Now")
+                    .putValue("season", 2)
+                    .putValue("episode", 9)
+                    .putValue("genre", "cartoon")
+                    .putValue("program", "Rick and Morty")
+                    .putValue("channel", "cartoon network")
+                    .putValue("publisher", "Turner Broadcasting System")
+                    .putValue("clientId", "badClient")
+                    .putValue("customClientId", "myClient")
+                    .putValue("subbrand", "badBrand")
+                    .putValue("customSubbrand", "myBrand")
+                    .putValue("fullEpisode", true)
+                    .putValue("podId", "segment A")
+                    .putValue("playbackPosition", 70))
+                    .integration("nielsen-dcr", nielsenOptions)
+                    .build());
+
+    JSONObject expected = new JSONObject();
+    expected.put("assetid", "1");
+    expected.put("title", "Look Who's Purging Now");
+    expected.put("program", "Rick and Morty");
+    expected.put("segB", "segmentB");
+    expected.put("pipmode", "false");
+    expected.put("isfullepisode", "y");
+    expected.put("type", "content");
+    expected.put("adloadtype", "1");
+    expected.put("hasAds", "0");
+    expected.put("crossId2", "id");
+    expected.put("clientId", "myClient");
+    expected.put("subbrand", "myBrand");
 
     verify(nielsen).loadMetadata(jsonEq(expected));
   }
@@ -279,6 +337,115 @@ public class NielsenDCRTest {
 
     verify(nielsen).loadMetadata(jsonEq(adExpected));
   }
+
+  @Test
+  public void videoAdStartedWithTypePreRoll() throws JSONException {
+
+    Map<String, Object> nielsenOptions = new LinkedHashMap<>();
+    nielsenOptions.put("segB", "segmentB");
+    nielsenOptions.put("hasAds", true);
+
+    integration.track(
+            new TrackPayload.Builder().anonymousId("foo").event("Video Ad Started").properties(new Properties() //
+                    .putValue("assetId", 4311)
+                    .putValue("podId", "adSegmentA")
+                    .putValue("type", "pre-roll")
+                    .putValue("totalLength", 120)
+                    .putValue("loadType", "linear")
+                    .putValue("position", 20)
+                    .putValue("contentAssetId", 1234)
+                    .putValue("clientId", "myClient")
+                    .putValue("subbrand", "myBrand")
+                    .putValue("playbackPosition", 0)
+                    .putValue("title", "Helmet Ad"))
+                    .integration("nielsen-dcr", nielsenOptions).build());
+
+    JSONObject contentExpected = new JSONObject();
+    contentExpected.put("assetid", "1234");
+    contentExpected.put("type", "content");
+    contentExpected.put("title", "Helmet Ad");
+    contentExpected.put("pipmode", "false");
+    contentExpected.put("segB", "segmentB");
+    contentExpected.put("clientId", "myClient");
+    contentExpected.put("subbrand", "myBrand");
+    contentExpected.put("length", "120");
+    contentExpected.put("adloadtype", "1");
+    contentExpected.put("hasAds", "1");
+    contentExpected.put("isfullepisode", "sf");
+
+    JSONObject adExpected = new JSONObject();
+    adExpected.put("assetid", "4311");
+    adExpected.put("type", "pre-roll");
+    adExpected.put("title", "Helmet Ad");
+
+    ArgumentCaptor<JSONObject> captor = ArgumentCaptor.forClass(JSONObject.class);
+
+    verify(nielsen, Mockito.times(2)).loadMetadata(captor.capture());
+
+    List<JSONObject> calls = captor.getAllValues();
+
+    JSONAssert.assertEquals(contentExpected, calls.get(0), JSONCompareMode.LENIENT);
+    JSONAssert.assertEquals(adExpected, calls.get(1), JSONCompareMode.LENIENT);
+  }
+
+
+  @Test
+  public void videoAdStartedWithTypePreRoll_settings() throws JSONException {
+
+    settings.assetIdPropertyName = "customAssetId";
+    settings.clientIdPropertyName = "customClientId";
+    settings.subbrandPropertyName = "customSubbrand";
+
+    Map<String, Object> nielsenOptions = new LinkedHashMap<>();
+    nielsenOptions.put("segB", "segmentB");
+    nielsenOptions.put("hasAds", true);
+
+    integration.track(
+            new TrackPayload.Builder().anonymousId("foo").event("Video Ad Started").properties(new Properties() //
+                    .putValue("assetId", 4311)
+                    .putValue("podId", "adSegmentA")
+                    .putValue("type", "pre-roll")
+                    .putValue("totalLength", 120)
+                    .putValue("loadType", "linear")
+                    .putValue("position", 20)
+                    .putValue("contentAssetId", 1234)
+                    .putValue("customAssetId", 5678)
+                    .putValue("clientId", "badClient")
+                    .putValue("customClientId", "myClient")
+                    .putValue("subbrand", "badBrand")
+                    .putValue("customSubbrand", "myBrand")
+                    .putValue("playbackPosition", 0)
+                    .putValue("title", "Helmet Ad"))
+                    .integration("nielsen-dcr", nielsenOptions).build());
+
+    JSONObject contentExpected = new JSONObject();
+    contentExpected.put("assetid", "5678");
+    contentExpected.put("type", "content");
+    contentExpected.put("title", "Helmet Ad");
+    contentExpected.put("pipmode", "false");
+    contentExpected.put("segB", "segmentB");
+    contentExpected.put("clientId", "myClient");
+    contentExpected.put("subbrand", "myBrand");
+    contentExpected.put("length", "120");
+    contentExpected.put("adloadtype", "1");
+    contentExpected.put("hasAds", "1");
+    contentExpected.put("isfullepisode", "sf");
+
+    JSONObject adExpected = new JSONObject();
+    adExpected.put("assetid", "4311");
+    adExpected.put("type", "pre-roll");
+    adExpected.put("title", "Helmet Ad");
+
+    ArgumentCaptor<JSONObject> captor = ArgumentCaptor.forClass(JSONObject.class);
+
+    verify(nielsen, Mockito.times(2)).loadMetadata(captor.capture());
+
+    List<JSONObject> calls = captor.getAllValues();
+
+    JSONAssert.assertEquals(contentExpected, calls.get(0), JSONCompareMode.LENIENT);
+    JSONAssert.assertEquals(adExpected, calls.get(1), JSONCompareMode.LENIENT);
+  }
+
 
   @Test
   public void videoAdCompleted() {
