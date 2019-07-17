@@ -29,10 +29,25 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
   private AppSdk appSdk;
   private final Logger logger;
   private TimerTask monitorHeadPos;
+  private Settings settings;
   int playheadPosition;
 
-  NielsenDCRIntegration(AppSdk appSdk, Logger logger) {
+  static class Settings {
+    String assetIdPropertyName;
+    String clientIdPropertyName;
+    String subbrandPropertyName;
+
+    Settings() {
+      // Null by default
+      assetIdPropertyName = null;
+      clientIdPropertyName = null;
+      subbrandPropertyName = null;
+    }
+  }
+
+  NielsenDCRIntegration(AppSdk appSdk, Settings settings, Logger logger) {
     this.appSdk = appSdk;
+    this.settings = settings;
     this.logger = logger;
   }
 
@@ -134,8 +149,24 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
       contentMetadata.put("segC", segC);
     }
 
-    int contentAssetId = properties.getInt("assetId", 0);
+    String assetIdPropertyName =
+        (settings.assetIdPropertyName != null) ? settings.assetIdPropertyName : "assetId";
+    int contentAssetId = properties.getInt(assetIdPropertyName, 0);
     contentMetadata.put("assetid", String.valueOf(contentAssetId));
+
+    String clientIdPropertyName =
+        (settings.clientIdPropertyName != null) ? settings.clientIdPropertyName : "clientId";
+    String clientId = properties.getString(clientIdPropertyName);
+    if (clientId != null && !clientId.isEmpty()) {
+      contentMetadata.put("clientid", clientId);
+    }
+
+    String subbrandPropertyName =
+        (settings.subbrandPropertyName != null) ? settings.subbrandPropertyName : "subbrand";
+    String subbrand = properties.getString(subbrandPropertyName);
+    if (subbrand != null && !subbrand.isEmpty()) {
+      contentMetadata.put("subbrand", subbrand);
+    }
 
     if (properties.containsKey("totalLength")) {
       int length = properties.getInt("totalLength", 0);
@@ -230,8 +261,24 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
       adContentMetadata.put("segC", segC);
     }
 
-    int contentAssetId = properties.getInt("contentAssetId", 0);
+    String assetIdPropertyName =
+        (settings.assetIdPropertyName != null) ? settings.assetIdPropertyName : "contentAssetId";
+    int contentAssetId = properties.getInt(assetIdPropertyName, 0);
     adContentMetadata.put("assetid", String.valueOf(contentAssetId));
+
+    String clientIdPropertyName =
+        (settings.clientIdPropertyName != null) ? settings.clientIdPropertyName : "clientId";
+    String clientId = properties.getString(clientIdPropertyName);
+    if (clientId != null && !clientId.isEmpty()) {
+      adContentMetadata.put("clientid", clientId);
+    }
+
+    String subbrandPropertyName =
+        (settings.subbrandPropertyName != null) ? settings.subbrandPropertyName : "subbrand";
+    String subbrand = properties.getString(subbrandPropertyName);
+    if (subbrand != null && !subbrand.isEmpty()) {
+      adContentMetadata.put("subbrand", subbrand);
+    }
 
     if (properties.containsKey("totalLength")) {
       int length = properties.getInt("totalLength", 0);

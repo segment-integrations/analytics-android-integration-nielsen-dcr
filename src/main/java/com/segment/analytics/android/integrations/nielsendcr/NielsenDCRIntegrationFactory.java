@@ -79,7 +79,22 @@ class NielsenDCRIntegrationFactory implements Integration.Factory {
       AppSdk appSdk = appSDKFactory.create(appContext, appSdkConfig, null);
       logger.verbose("new AppSdk(%s),", appSdkConfig.toString(2));
 
-      return new NielsenDCRIntegration(appSdk, logger);
+      // Settings
+      NielsenDCRIntegration.Settings integrationSettings = new NielsenDCRIntegration.Settings();
+      String assetIdPropertyName = settings.getString("assetIdPropertyName");
+      if (assetIdPropertyName != null && !assetIdPropertyName.isEmpty()) {
+        integrationSettings.assetIdPropertyName = assetIdPropertyName;
+      }
+      String clientIdPropertyName = settings.getString("clientIdPropertyName");
+      if (clientIdPropertyName != null && !clientIdPropertyName.isEmpty()) {
+        integrationSettings.clientIdPropertyName = clientIdPropertyName;
+      }
+      String subbrandPropertyName = settings.getString("subbrandPropertyName");
+      if (subbrandPropertyName != null && !subbrandPropertyName.isEmpty()) {
+        integrationSettings.subbrandPropertyName = subbrandPropertyName;
+      }
+
+      return new NielsenDCRIntegration(appSdk, integrationSettings, logger);
     } catch (JSONException e) {
       logger.error(e, "Could not initialize settings.");
       return null;
