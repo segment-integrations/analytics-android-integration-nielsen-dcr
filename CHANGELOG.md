@@ -1,4 +1,9 @@
 
+1.1.2 / 2019-07-17
+==================
+
+  * [DEST-870][DEST-880] Add custom properties for assetId, clientId and subbrand (#7)
+
 1.1.1 / 2019-07-11
 ==================
 
