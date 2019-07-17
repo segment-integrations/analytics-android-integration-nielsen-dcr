@@ -181,7 +181,7 @@ public class NielsenDCRTest {
     expected.put("adloadtype", "1");
     expected.put("hasAds", "0");
     expected.put("crossId2", "id");
-    expected.put("clientId", "myClient");
+    expected.put("clientid", "myClient");
     expected.put("subbrand", "myBrand");
 
     verify(nielsen).loadMetadata(jsonEq(expected));
@@ -230,7 +230,7 @@ public class NielsenDCRTest {
     expected.put("adloadtype", "1");
     expected.put("hasAds", "0");
     expected.put("crossId2", "id");
-    expected.put("clientId", "myClient");
+    expected.put("clientid", "myClient");
     expected.put("subbrand", "myBrand");
 
     verify(nielsen).loadMetadata(jsonEq(expected));
@@ -366,7 +366,7 @@ public class NielsenDCRTest {
     contentExpected.put("title", "Helmet Ad");
     contentExpected.put("pipmode", "false");
     contentExpected.put("segB", "segmentB");
-    contentExpected.put("clientId", "myClient");
+    contentExpected.put("clientid", "myClient");
     contentExpected.put("subbrand", "myBrand");
     contentExpected.put("length", "120");
     contentExpected.put("adloadtype", "1");
@@ -424,7 +424,7 @@ public class NielsenDCRTest {
     contentExpected.put("title", "Helmet Ad");
     contentExpected.put("pipmode", "false");
     contentExpected.put("segB", "segmentB");
-    contentExpected.put("clientId", "myClient");
+    contentExpected.put("clientid", "myClient");
     contentExpected.put("subbrand", "myBrand");
     contentExpected.put("length", "120");
     contentExpected.put("adloadtype", "1");

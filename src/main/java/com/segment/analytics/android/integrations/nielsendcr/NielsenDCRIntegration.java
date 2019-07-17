@@ -158,7 +158,7 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
         (settings.clientIdPropertyName != null) ? settings.clientIdPropertyName : "clientId";
     String clientId = properties.getString(clientIdPropertyName);
     if (clientId != null && !clientId.isEmpty()) {
-      contentMetadata.put("clientId", clientId);
+      contentMetadata.put("clientid", clientId);
     }
 
     String subbrandPropertyName =
@@ -270,7 +270,7 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
         (settings.clientIdPropertyName != null) ? settings.clientIdPropertyName : "clientId";
     String clientId = properties.getString(clientIdPropertyName);
     if (clientId != null && !clientId.isEmpty()) {
-      adContentMetadata.put("clientId", clientId);
+      adContentMetadata.put("clientid", clientId);
     }
 
     String subbrandPropertyName =
