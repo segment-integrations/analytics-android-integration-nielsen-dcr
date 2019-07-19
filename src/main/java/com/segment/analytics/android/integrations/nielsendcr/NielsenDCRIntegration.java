@@ -36,12 +36,14 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
     String assetIdPropertyName;
     String clientIdPropertyName;
     String subbrandPropertyName;
+    String contentLengthPropertyName;
 
     Settings() {
       // Null by default
       assetIdPropertyName = null;
       clientIdPropertyName = null;
       subbrandPropertyName = null;
+      contentLengthPropertyName = null;
     }
   }
 
@@ -168,8 +170,12 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
       contentMetadata.put("subbrand", subbrand);
     }
 
-    if (properties.containsKey("totalLength")) {
-      int length = properties.getInt("totalLength", 0);
+    String lengthPropertyName =
+        (settings.contentLengthPropertyName != null)
+            ? settings.contentLengthPropertyName
+            : "totalLength";
+    if (properties.containsKey(lengthPropertyName)) {
+      int length = properties.getInt(lengthPropertyName, 0);
       contentMetadata.put("length", String.valueOf(length));
     }
 
@@ -280,8 +286,12 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
       adContentMetadata.put("subbrand", subbrand);
     }
 
-    if (properties.containsKey("totalLength")) {
-      int length = properties.getInt("totalLength", 0);
+    String lengthPropertyName =
+        (settings.contentLengthPropertyName != null)
+            ? settings.contentLengthPropertyName
+            : "totalLength";
+    if (properties.containsKey(lengthPropertyName)) {
+      int length = properties.getInt(lengthPropertyName, 0);
       adContentMetadata.put("length", String.valueOf(length));
     }
 

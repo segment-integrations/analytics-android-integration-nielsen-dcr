@@ -166,7 +166,8 @@ public class NielsenDCRTest {
                     .putValue("subbrand", "myBrand")
                     .putValue("fullEpisode", true)
                     .putValue("podId", "segment A")
-                    .putValue("playbackPosition", 70))
+                    .putValue("playbackPosition", 70)
+                    .putValue("totalLength", 1200))
                     .integration("nielsen-dcr", nielsenOptions)
                     .build());
 
@@ -183,6 +184,7 @@ public class NielsenDCRTest {
     expected.put("crossId2", "id");
     expected.put("clientid", "myClient");
     expected.put("subbrand", "myBrand");
+    expected.put("length", "1200");
 
     verify(nielsen).loadMetadata(jsonEq(expected));
   }
@@ -193,6 +195,7 @@ public class NielsenDCRTest {
     settings.assetIdPropertyName = "customAssetId";
     settings.clientIdPropertyName = "customClientId";
     settings.subbrandPropertyName = "customSubbrand";
+    settings.contentLengthPropertyName = "customLength";
 
     Map<String, Object> nielsenOptions = new LinkedHashMap<>();
     nielsenOptions.put("segB", "segmentB");
@@ -215,7 +218,9 @@ public class NielsenDCRTest {
                     .putValue("customSubbrand", "myBrand")
                     .putValue("fullEpisode", true)
                     .putValue("podId", "segment A")
-                    .putValue("playbackPosition", 70))
+                    .putValue("playbackPosition", 70)
+                    .putValue("customLength", 1200)
+                    .putValue("totalLength", 1100))
                     .integration("nielsen-dcr", nielsenOptions)
                     .build());
 
@@ -232,6 +237,7 @@ public class NielsenDCRTest {
     expected.put("crossId2", "id");
     expected.put("clientid", "myClient");
     expected.put("subbrand", "myBrand");
+    expected.put("length", "1200");
 
     verify(nielsen).loadMetadata(jsonEq(expected));
   }
@@ -395,6 +401,7 @@ public class NielsenDCRTest {
     settings.assetIdPropertyName = "customAssetId";
     settings.clientIdPropertyName = "customClientId";
     settings.subbrandPropertyName = "customSubbrand";
+    settings.contentLengthPropertyName = "customLength";
 
     Map<String, Object> nielsenOptions = new LinkedHashMap<>();
     nielsenOptions.put("segB", "segmentB");
@@ -405,7 +412,8 @@ public class NielsenDCRTest {
                     .putValue("assetId", 4311)
                     .putValue("podId", "adSegmentA")
                     .putValue("type", "pre-roll")
-                    .putValue("totalLength", 120)
+                    .putValue("totalLength", 110)
+                    .putValue("customLength", 120)
                     .putValue("loadType", "linear")
                     .putValue("position", 20)
                     .putValue("contentAssetId", 1234)

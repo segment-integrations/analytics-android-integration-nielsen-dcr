@@ -94,6 +94,11 @@ class NielsenDCRIntegrationFactory implements Integration.Factory {
         integrationSettings.subbrandPropertyName = subbrandPropertyName;
       }
 
+      String contentLengthPropertyName = settings.getString("contentLengthPropertyName");
+      if (contentLengthPropertyName != null && !contentLengthPropertyName.isEmpty()) {
+        integrationSettings.contentLengthPropertyName = contentLengthPropertyName;
+      }
+
       return new NielsenDCRIntegration(appSdk, integrationSettings, logger);
     } catch (JSONException e) {
       logger.error(e, "Could not initialize settings.");
