@@ -33,6 +33,7 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
   int playheadPosition;
 
   static class Settings {
+    String adAssetIdPropertyName;
     String assetIdPropertyName;
     String clientIdPropertyName;
     String subbrandPropertyName;
@@ -40,6 +41,7 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
 
     Settings() {
       // Null by default
+      adAssetIdPropertyName = null;
       assetIdPropertyName = null;
       clientIdPropertyName = null;
       subbrandPropertyName = null;
@@ -220,7 +222,8 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
 
     JSONObject adMetadata = mapSpecialKeys(properties, mapper);
 
-    int assetId = properties.getInt("assetId", 0);
+    String adAssetIdPropertyName = (settings.adAssetIdPropertyName != null) ? settings.adAssetIdPropertyName : "assetId";
+    int assetId = properties.getInt(adAssetIdPropertyName, 0);
     adMetadata.put("assetid", String.valueOf(assetId));
 
     String adType = properties.getString("type");

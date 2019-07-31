@@ -85,6 +85,10 @@ class NielsenDCRIntegrationFactory implements Integration.Factory {
       if (assetIdPropertyName != null && !assetIdPropertyName.isEmpty()) {
         integrationSettings.assetIdPropertyName = assetIdPropertyName;
       }
+      String adAssetIdPropertyName = settings.getString("adAssetIdPropertyName");
+      if (adAssetIdPropertyName != null && !adAssetIdPropertyName.isEmpty()) {
+        integrationSettings.adAssetIdPropertyName = adAssetIdPropertyName;
+      }
       String clientIdPropertyName = settings.getString("clientIdPropertyName");
       if (clientIdPropertyName != null && !clientIdPropertyName.isEmpty()) {
         integrationSettings.clientIdPropertyName = clientIdPropertyName;

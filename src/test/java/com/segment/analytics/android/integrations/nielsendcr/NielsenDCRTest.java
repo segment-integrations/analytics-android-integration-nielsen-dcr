@@ -322,6 +322,28 @@ public class NielsenDCRTest {
   }
 
   @Test
+  public void videoAdStarted_settings() throws JSONException {
+    settings.adAssetIdPropertyName = "customAssetId";
+
+    integration.track(
+            new TrackPayload.Builder().anonymousId("foo").event("Video Ad Started").properties(new Properties() //
+                    .putValue("assetId", 1234)
+                    .putValue("customAssetId", 4311)
+                    .putValue("podId", "adSegmentA")
+                    .putValue("type", "mid-roll")
+                    .putValue("totalLength", 120)
+                    .putValue("playbackPosition", 0)
+                    .putValue("title", "Helmet Ad")).build());
+
+    JSONObject expected = new JSONObject();
+    expected.put("assetid", "4311");
+    expected.put("type", "mid-roll");
+    expected.put("title", "Helmet Ad");
+
+    verify(nielsen).loadMetadata(jsonEq(expected));
+  }
+
+  @Test
   public void videoAdStartedWithTypeMidRoll() throws JSONException {
 
     integration.track(
