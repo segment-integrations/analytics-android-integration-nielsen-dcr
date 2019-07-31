@@ -222,7 +222,8 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
 
     JSONObject adMetadata = mapSpecialKeys(properties, mapper);
 
-    String adAssetIdPropertyName = (settings.adAssetIdPropertyName != null) ? settings.adAssetIdPropertyName : "assetId";
+    String adAssetIdPropertyName =
+        (settings.adAssetIdPropertyName != null) ? settings.adAssetIdPropertyName : "assetId";
     int assetId = properties.getInt(adAssetIdPropertyName, 0);
     adMetadata.put("assetid", String.valueOf(assetId));
 
