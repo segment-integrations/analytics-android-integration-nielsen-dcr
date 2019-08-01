@@ -402,7 +402,7 @@ public class NielsenDCRTest {
 
     JSONObject adExpected = new JSONObject();
     adExpected.put("assetid", "4311");
-    adExpected.put("type", "pre-roll");
+    adExpected.put("type", "preroll");
     adExpected.put("title", "Helmet Ad");
 
     ArgumentCaptor<JSONObject> captor = ArgumentCaptor.forClass(JSONObject.class);
@@ -467,7 +467,7 @@ public class NielsenDCRTest {
 
     JSONObject adExpected = new JSONObject();
     adExpected.put("assetid", "4311");
-    adExpected.put("type", "pre-roll");
+    adExpected.put("type", "preroll");
     adExpected.put("title", "Helmet Ad");
 
     ArgumentCaptor<JSONObject> captor = ArgumentCaptor.forClass(JSONObject.class);

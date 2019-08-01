@@ -233,6 +233,9 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
     adMetadata.put("assetid", String.valueOf(assetId));
 
     String adType = properties.getString("type");
+    if (adType != null && !adType.isEmpty()) {
+      adType = adType.replace("-", "");
+    }
     adMetadata.put("type", adType);
 
     String title = String.valueOf(properties.get("title"));
