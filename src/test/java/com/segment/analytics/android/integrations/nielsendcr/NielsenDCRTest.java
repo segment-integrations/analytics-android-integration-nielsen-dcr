@@ -434,7 +434,6 @@ public class NielsenDCRTest {
         .put("totalLength", 110)
         .put("loadType", "linear")
         .put("position", 20)
-        .put("contentAssetId", 1234)
         .put("customContentAssetId", 5678)
         .put("clientId", "badClient")
         .put("customClientId", "myClient")
@@ -448,7 +447,7 @@ public class NielsenDCRTest {
                     // ad metadata
                     .putValue("customAdAssetId", 4311)
                     .putValue("type", "pre-roll")
-                    .putValue("type", "pre-roll")
+                    .putValue("title", "Helmet Ad")
                     // content metadata
                     .putValue("content", content))
                     .integration("nielsen-dcr", nielsenOptions).build());
