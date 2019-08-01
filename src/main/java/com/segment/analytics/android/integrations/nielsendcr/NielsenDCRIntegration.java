@@ -2,14 +2,16 @@ package com.segment.analytics.android.integrations.nielsendcr;
 
 import android.support.annotation.NonNull;
 
-import static com.segment.analytics.internal.Utils.isNullOrEmpty;
-
+import com.nielsen.app.sdk.AppSdk;
 import com.segment.analytics.Properties;
+import com.segment.analytics.ValueMap;
 import com.segment.analytics.integrations.Integration;
 import com.segment.analytics.integrations.Logger;
 import com.segment.analytics.integrations.ScreenPayload;
 import com.segment.analytics.integrations.TrackPayload;
-import com.nielsen.app.sdk.AppSdk;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.Calendar;
 import java.util.Collections;
@@ -17,10 +19,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
-
 import java.util.concurrent.TimeUnit;
-import org.json.JSONException;
-import org.json.JSONObject;
+
+import static com.segment.analytics.internal.Utils.isNullOrEmpty;
 
 public class NielsenDCRIntegration extends Integration<AppSdk> {
   public static final Factory FACTORY = NielsenDCRIntegrationFactory.create();
@@ -34,7 +35,8 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
 
   static class Settings {
     String adAssetIdPropertyName;
-    String assetIdPropertyName;
+    String contentAssetIdPropertyName;
+    String assetIdPropertyName; // deprecated
     String clientIdPropertyName;
     String subbrandPropertyName;
     String contentLengthPropertyName;
@@ -42,7 +44,8 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
     Settings() {
       // Null by default
       adAssetIdPropertyName = null;
-      assetIdPropertyName = null;
+      contentAssetIdPropertyName = null;
+      assetIdPropertyName = null; // deprecated
       clientIdPropertyName = null;
       subbrandPropertyName = null;
       contentLengthPropertyName = null;
@@ -153,9 +156,9 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
       contentMetadata.put("segC", segC);
     }
 
-    String assetIdPropertyName =
-        (settings.assetIdPropertyName != null) ? settings.assetIdPropertyName : "assetId";
-    int contentAssetId = properties.getInt(assetIdPropertyName, 0);
+    String contentAssetIdPropertyName =
+        (settings.contentAssetIdPropertyName != null) ? settings.contentAssetIdPropertyName : "assetId";
+    int contentAssetId = properties.getInt(contentAssetIdPropertyName, 0);
     contentMetadata.put("assetid", String.valueOf(contentAssetId));
 
     String clientIdPropertyName =
@@ -271,9 +274,9 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
       adContentMetadata.put("segC", segC);
     }
 
-    String assetIdPropertyName =
-        (settings.assetIdPropertyName != null) ? settings.assetIdPropertyName : "contentAssetId";
-    int contentAssetId = properties.getInt(assetIdPropertyName, 0);
+    String contentAssetIdPropertyName =
+        (settings.contentAssetIdPropertyName != null) ? settings.contentAssetIdPropertyName : "contentAssetId";
+    int contentAssetId = properties.getInt(contentAssetIdPropertyName, 0);
     adContentMetadata.put("assetid", String.valueOf(contentAssetId));
 
     String clientIdPropertyName =
@@ -299,19 +302,27 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
       adContentMetadata.put("length", String.valueOf(length));
     }
 
-    if (properties.containsKey("title")) {
-      String title = properties.getString("title");
-      adContentMetadata.put("title", title);
-    }
+    boolean fullEpisodeStatus = false;
 
-    if (properties.containsKey("program")) {
-      String program = properties.getString("program");
-      adContentMetadata.put("program", program);
-    }
+    if (properties.containsKey("content") && properties.getValueMap("content") != null) {
+      ValueMap content = properties.getValueMap("content");
 
-    if (properties.containsKey("airdate")) {
-      String airdate = properties.getString("airdate");
-      adContentMetadata.put("airdate", airdate);
+      if (content.containsKey("title")) {
+        String title = content.getString("title");
+        adContentMetadata.put("title", title);
+      }
+
+      if (content.containsKey("program")) {
+        String program = content.getString("program");
+        adContentMetadata.put("program", program);
+      }
+  
+      if (content.containsKey("airdate")) {
+        String airdate = content.getString("airdate");
+        adContentMetadata.put("airdate", airdate);
+      }
+  
+      fullEpisodeStatus = content.getBoolean("fullEpisode", false);
     }
 
     String adLoadType = String.valueOf(options.get("adLoadType"));
@@ -327,9 +338,7 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
       adContentMetadata.put("hasAds", "0");
     }
 
-    boolean fullEpisodeStatus = properties.getBoolean("fullEpisode", false);
     adContentMetadata.put("isfullepisode", fullEpisodeStatus ? "y" : "sf");
-
     adContentMetadata.put("type", "content");
 
     return adContentMetadata;
