@@ -314,7 +314,7 @@ public class NielsenDCRTest {
 
     JSONObject expected = new JSONObject();
     expected.put("assetid", "4311");
-    expected.put("type", "mid-roll");
+    expected.put("type", "midroll");
     expected.put("title", "Helmet Ad");
 
     verify(nielsen).loadMetadata(jsonEq(expected));
@@ -336,7 +336,7 @@ public class NielsenDCRTest {
 
     JSONObject expected = new JSONObject();
     expected.put("assetid", "4311");
-    expected.put("type", "mid-roll");
+    expected.put("type", "midroll");
     expected.put("title", "Helmet Ad");
 
     verify(nielsen).loadMetadata(jsonEq(expected));
@@ -359,7 +359,7 @@ public class NielsenDCRTest {
 
     JSONObject adExpected = new JSONObject();
     adExpected.put("assetid", "4311");
-    adExpected.put("type", "mid-roll");
+    adExpected.put("type", "midroll");
     adExpected.put("title", "Helmet Ad");
 
     verify(nielsen).loadMetadata(jsonEq(adExpected));
@@ -372,19 +372,28 @@ public class NielsenDCRTest {
     nielsenOptions.put("segB", "segmentB");
     nielsenOptions.put("hasAds", true);
 
+    ValueMap contentMetadata = new ValueMap() //
+            .putValue("podId", "adSegmentA")
+            .putValue("totalLength", 120)
+            .putValue("loadType", "linear")
+            .putValue("position", 20)
+            .putValue("contentAssetId", 1234)
+            .putValue("clientId", "myClient")
+            .putValue("subbrand", "myBrand")
+            .putValue("playbackPosition", 0)
+            .putValue("title", "Helmet Ad");
+
+    ValueMap adMetadata = new ValueMap() //
+            .putValue("assetId", 4311)
+            .putValue("type", "pre-roll")
+            .putValue("title", "Helmet Ad");
+
+    Properties trackProperties = new Properties();
+    trackProperties.putAll(adMetadata);
+    trackProperties.put("content", contentMetadata);
+
     integration.track(
-            new TrackPayload.Builder().anonymousId("foo").event("Video Ad Started").properties(new Properties() //
-                    .putValue("assetId", 4311)
-                    .putValue("podId", "adSegmentA")
-                    .putValue("type", "pre-roll")
-                    .putValue("totalLength", 120)
-                    .putValue("loadType", "linear")
-                    .putValue("position", 20)
-                    .putValue("contentAssetId", 1234)
-                    .putValue("clientId", "myClient")
-                    .putValue("subbrand", "myBrand")
-                    .putValue("playbackPosition", 0)
-                    .putValue("title", "Helmet Ad"))
+            new TrackPayload.Builder().anonymousId("foo").event("Video Ad Started").properties(trackProperties) //
                     .integration("nielsen-dcr", nielsenOptions).build());
 
     JSONObject contentExpected = new JSONObject();
@@ -429,27 +438,33 @@ public class NielsenDCRTest {
     nielsenOptions.put("segB", "segmentB");
     nielsenOptions.put("hasAds", true);
 
-    JSONObject content = new JSONObject() //
-        .put("podId", "adSegmentA")
-        .put("totalLength", 110)
-        .put("loadType", "linear")
-        .put("position", 20)
-        .put("customContentAssetId", 5678)
-        .put("clientId", "badClient")
-        .put("customClientId", "myClient")
-        .put("subbrand", "badBrand")
-        .put("customSubbrand", "myBrand")
-        .put("playbackPosition", 0)
-        .put("title", "Helmet Ad");
+    ValueMap contentMetadata = new ValueMap() //
+        .putValue("podId", "adSegmentA")
+        .putValue("customLength", 110)
+        .putValue("loadType", "linear")
+        .putValue("position", 20)
+        .putValue("customContentAssetId", 5678)
+        .putValue("clientId", "badClient")
+        .putValue("customClientId", "myClient")
+        .putValue("subbrand", "badBrand")
+        .putValue("customSubbrand", "myBrand")
+        .putValue("playbackPosition", 0)
+        .putValue("title", "Helmet Ad")
+        .putValue("hasAds", "1")
+        .putValue("segB", "segmentB");
+
+    ValueMap adMetadata = new ValueMap() //
+        .putValue("customAdAssetId", 4311)
+            .putValue("type", "pre-roll")
+          .putValue("title", "Helmet Ad")
+            .putValue("title", "Helmet Ad");
+
+    Properties trackProperties = new Properties();
+    trackProperties.putAll(adMetadata);
+    trackProperties.put("content", contentMetadata);
 
     integration.track(
-            new TrackPayload.Builder().anonymousId("foo").event("Video Ad Started").properties(new Properties() //
-                    // ad metadata
-                    .putValue("customAdAssetId", 4311)
-                    .putValue("type", "pre-roll")
-                    .putValue("title", "Helmet Ad")
-                    // content metadata
-                    .putValue("content", content))
+            new TrackPayload.Builder().anonymousId("foo").event("Video Ad Started").properties(trackProperties) //
                     .integration("nielsen-dcr", nielsenOptions).build());
 
     JSONObject contentExpected = new JSONObject();
@@ -460,7 +475,7 @@ public class NielsenDCRTest {
     contentExpected.put("segB", "segmentB");
     contentExpected.put("clientid", "myClient");
     contentExpected.put("subbrand", "myBrand");
-    contentExpected.put("length", "120");
+    contentExpected.put("length", "110");
     contentExpected.put("adloadtype", "1");
     contentExpected.put("hasAds", "1");
     contentExpected.put("isfullepisode", "sf");
