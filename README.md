@@ -22,12 +22,11 @@ Nielsen does not host their SDK on Maven, so you must manually include their fra
 There will be an NDA to sign prior to accessing the download. Nielsen requires you fill out your company info and have a Nielsen representative before getting started.
 
 ## Repository
-- [Snapshots](https://oss.sonatype.org/content/repositories/snapshots/com/segment/analytics/android/integrations/nielsen-dtvr/)
-- [Releases](https://oss.sonatype.org/content/repositories/releases/com/segment/analytics/android/integrations/nielsen-dtvr/)
+- [Snapshots](https://oss.sonatype.org/content/repositories/snapshots/com/segment/analytics/android/integrations/nielsendcr/)
+- [Releases](https://oss.sonatype.org/content/repositories/releases/com/segment/analytics/android/integrations/nielsendcr/)
 
 ## Releasing
-CircleCI is configured to release the artifacts when a new tag is created. Snapshot builds are created and uploaded
-for each commit in master.
+CircleCI is configured to release the artifacts when a new tag is created. Snapshot builds are created and uploaded for each commit in master.
 
 When you are working in a new release, change the version to `<new-version>-SNAPSHOT` in `gradle.properties`. After you
 are done, push your changes to master (it will upload the SNAPSHOT version) and then create a tag with the version (it
