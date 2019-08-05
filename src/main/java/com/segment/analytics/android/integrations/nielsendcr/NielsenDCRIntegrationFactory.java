@@ -3,13 +3,14 @@ package com.segment.analytics.android.integrations.nielsendcr;
 import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.util.Log;
+
 import com.nielsen.app.sdk.AppSdk;
 import com.nielsen.app.sdk.IAppNotifier;
 import com.segment.analytics.Analytics;
 import com.segment.analytics.ValueMap;
 import com.segment.analytics.integrations.Integration;
 import com.segment.analytics.integrations.Logger;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -81,9 +82,13 @@ class NielsenDCRIntegrationFactory implements Integration.Factory {
 
       // Settings
       NielsenDCRIntegration.Settings integrationSettings = new NielsenDCRIntegration.Settings();
-      String assetIdPropertyName = settings.getString("assetIdPropertyName");
-      if (assetIdPropertyName != null && !assetIdPropertyName.isEmpty()) {
-        integrationSettings.assetIdPropertyName = assetIdPropertyName;
+      String contentAssetIdPropertyName = settings.getString("contentAssetIdPropertyName");
+      if (contentAssetIdPropertyName != null && !contentAssetIdPropertyName.isEmpty()) {
+        integrationSettings.contentAssetIdPropertyName = contentAssetIdPropertyName;
+      }
+      String adAssetIdPropertyName = settings.getString("adAssetIdPropertyName");
+      if (adAssetIdPropertyName != null && !adAssetIdPropertyName.isEmpty()) {
+        integrationSettings.adAssetIdPropertyName = adAssetIdPropertyName;
       }
       String clientIdPropertyName = settings.getString("clientIdPropertyName");
       if (clientIdPropertyName != null && !clientIdPropertyName.isEmpty()) {

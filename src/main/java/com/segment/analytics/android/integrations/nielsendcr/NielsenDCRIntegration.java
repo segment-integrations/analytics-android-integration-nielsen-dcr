@@ -2,14 +2,16 @@ package com.segment.analytics.android.integrations.nielsendcr;
 
 import android.support.annotation.NonNull;
 
-import static com.segment.analytics.internal.Utils.isNullOrEmpty;
-
+import com.nielsen.app.sdk.AppSdk;
 import com.segment.analytics.Properties;
+import com.segment.analytics.ValueMap;
 import com.segment.analytics.integrations.Integration;
 import com.segment.analytics.integrations.Logger;
 import com.segment.analytics.integrations.ScreenPayload;
 import com.segment.analytics.integrations.TrackPayload;
-import com.nielsen.app.sdk.AppSdk;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.Calendar;
 import java.util.Collections;
@@ -17,10 +19,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
-
 import java.util.concurrent.TimeUnit;
-import org.json.JSONException;
-import org.json.JSONObject;
+
+import static com.segment.analytics.internal.Utils.isNullOrEmpty;
 
 public class NielsenDCRIntegration extends Integration<AppSdk> {
   public static final Factory FACTORY = NielsenDCRIntegrationFactory.create();
@@ -33,14 +34,18 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
   int playheadPosition;
 
   static class Settings {
-    String assetIdPropertyName;
+    String adAssetIdPropertyName;
+    String contentAssetIdPropertyName;
+    String assetIdPropertyName; // deprecated
     String clientIdPropertyName;
     String subbrandPropertyName;
     String contentLengthPropertyName;
 
     Settings() {
       // Null by default
-      assetIdPropertyName = null;
+      adAssetIdPropertyName = null;
+      contentAssetIdPropertyName = null;
+      assetIdPropertyName = null; // deprecated
       clientIdPropertyName = null;
       subbrandPropertyName = null;
       contentLengthPropertyName = null;
@@ -151,9 +156,11 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
       contentMetadata.put("segC", segC);
     }
 
-    String assetIdPropertyName =
-        (settings.assetIdPropertyName != null) ? settings.assetIdPropertyName : "assetId";
-    int contentAssetId = properties.getInt(assetIdPropertyName, 0);
+    String contentAssetIdPropertyName =
+        (settings.contentAssetIdPropertyName != null)
+            ? settings.contentAssetIdPropertyName
+            : "assetId";
+    int contentAssetId = properties.getInt(contentAssetIdPropertyName, 0);
     contentMetadata.put("assetid", String.valueOf(contentAssetId));
 
     String clientIdPropertyName =
@@ -220,10 +227,15 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
 
     JSONObject adMetadata = mapSpecialKeys(properties, mapper);
 
-    int assetId = properties.getInt("assetId", 0);
+    String adAssetIdPropertyName =
+        (settings.adAssetIdPropertyName != null) ? settings.adAssetIdPropertyName : "assetId";
+    int assetId = properties.getInt(adAssetIdPropertyName, 0);
     adMetadata.put("assetid", String.valueOf(assetId));
 
     String adType = properties.getString("type");
+    if (adType != null && !adType.isEmpty()) {
+      adType = adType.replace("-", "");
+    }
     adMetadata.put("type", adType);
 
     String title = String.valueOf(properties.get("title"));
@@ -238,95 +250,110 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
       @NonNull Map<String, String> mapper)
       throws JSONException {
 
-    JSONObject adContentMetadata = mapSpecialKeys(properties, mapper);
+    Properties contentProperties = new Properties();
+    JSONObject adContentMetadata = new JSONObject(); // initialize to prevent null pointer exception
 
-    if (options.containsKey("pipmode")) {
-      String pipmode = String.valueOf(options.get("pipmode"));
-      adContentMetadata.put("pipmode", pipmode);
-    } else {
-      adContentMetadata.put("pipmode", "false");
+    if (properties.containsKey("content") && !properties.getValueMap("content").isEmpty()) {
+      ValueMap content = properties.getValueMap("content");
+      contentProperties.putAll(content);
     }
 
-    if (options.containsKey("crossId1")) {
-      String crossId1 = String.valueOf(options.get("crossId1"));
-      adContentMetadata.put("crossId1", crossId1);
+    if (!contentProperties.isEmpty()) {
+
+      adContentMetadata = mapSpecialKeys(contentProperties, mapper);
+
+      if (options.containsKey("pipmode")) {
+        String pipmode = String.valueOf(options.get("pipmode"));
+        adContentMetadata.put("pipmode", pipmode);
+      } else {
+        adContentMetadata.put("pipmode", "false");
+      }
+
+      if (options.containsKey("crossId1")) {
+        String crossId1 = String.valueOf(options.get("crossId1"));
+        adContentMetadata.put("crossId1", crossId1);
+      }
+
+      if (options.containsKey("crossId2")) {
+        String crossId2 = String.valueOf(options.get("crossId2"));
+        adContentMetadata.put("crossId2", crossId2);
+      }
+
+      if (options.containsKey("segB")) {
+        String segB = String.valueOf(options.get("segB"));
+        adContentMetadata.put("segB", segB);
+      }
+
+      if (options.containsKey("segC")) {
+        String segC = String.valueOf(options.get("segC"));
+        adContentMetadata.put("segC", segC);
+      }
+
+      boolean fullEpisodeStatus = false;
+
+      String contentAssetIdPropertyName =
+          (settings.contentAssetIdPropertyName != null)
+              ? settings.contentAssetIdPropertyName
+              : "contentAssetId";
+      int contentAssetId = contentProperties.getInt(contentAssetIdPropertyName, 0);
+      adContentMetadata.put("assetid", String.valueOf(contentAssetId));
+
+      String clientIdPropertyName =
+          (settings.clientIdPropertyName != null) ? settings.clientIdPropertyName : "clientId";
+      String clientId = contentProperties.getString(clientIdPropertyName);
+      if (clientId != null && !clientId.isEmpty()) {
+        adContentMetadata.put("clientid", clientId);
+      }
+
+      String subbrandPropertyName =
+          (settings.subbrandPropertyName != null) ? settings.subbrandPropertyName : "subbrand";
+      String subbrand = contentProperties.getString(subbrandPropertyName);
+      if (subbrand != null && !subbrand.isEmpty()) {
+        adContentMetadata.put("subbrand", subbrand);
+      }
+
+      String lengthPropertyName =
+          (settings.contentLengthPropertyName != null)
+              ? settings.contentLengthPropertyName
+              : "totalLength";
+      if (contentProperties.containsKey(lengthPropertyName)) {
+        int length = contentProperties.getInt(lengthPropertyName, 0);
+        adContentMetadata.put("length", String.valueOf(length));
+      }
+
+      if (contentProperties.containsKey("title")) {
+        String title = contentProperties.getString("title");
+        adContentMetadata.put("title", title);
+      }
+
+      if (contentProperties.containsKey("program")) {
+        String program = contentProperties.getString("program");
+        adContentMetadata.put("program", program);
+      }
+
+      if (contentProperties.containsKey("airdate")) {
+        String airdate = contentProperties.getString("airdate");
+        adContentMetadata.put("airdate", airdate);
+      }
+
+      fullEpisodeStatus = contentProperties.getBoolean("fullEpisode", false);
+
+      String adLoadType = String.valueOf(options.get("adLoadType"));
+      if (adLoadType.equals("dynamic")) {
+        adContentMetadata.put("adloadtype", "2");
+      } else {
+        adContentMetadata.put("adloadtype", "1");
+      }
+
+      if (options.containsKey("hasAds") && "true".equals(String.valueOf(options.get("hasAds")))) {
+        adContentMetadata.put("hasAds", "1");
+      } else {
+        adContentMetadata.put("hasAds", "0");
+      }
+
+      adContentMetadata.put("isfullepisode", fullEpisodeStatus ? "y" : "sf");
+      adContentMetadata.put("type", "content");
     }
-
-    if (options.containsKey("crossId2")) {
-      String crossId2 = String.valueOf(options.get("crossId2"));
-      adContentMetadata.put("crossId2", crossId2);
-    }
-
-    if (options.containsKey("segB")) {
-      String segB = String.valueOf(options.get("segB"));
-      adContentMetadata.put("segB", segB);
-    }
-
-    if (options.containsKey("segC")) {
-      String segC = String.valueOf(options.get("segC"));
-      adContentMetadata.put("segC", segC);
-    }
-
-    String assetIdPropertyName =
-        (settings.assetIdPropertyName != null) ? settings.assetIdPropertyName : "contentAssetId";
-    int contentAssetId = properties.getInt(assetIdPropertyName, 0);
-    adContentMetadata.put("assetid", String.valueOf(contentAssetId));
-
-    String clientIdPropertyName =
-        (settings.clientIdPropertyName != null) ? settings.clientIdPropertyName : "clientId";
-    String clientId = properties.getString(clientIdPropertyName);
-    if (clientId != null && !clientId.isEmpty()) {
-      adContentMetadata.put("clientid", clientId);
-    }
-
-    String subbrandPropertyName =
-        (settings.subbrandPropertyName != null) ? settings.subbrandPropertyName : "subbrand";
-    String subbrand = properties.getString(subbrandPropertyName);
-    if (subbrand != null && !subbrand.isEmpty()) {
-      adContentMetadata.put("subbrand", subbrand);
-    }
-
-    String lengthPropertyName =
-        (settings.contentLengthPropertyName != null)
-            ? settings.contentLengthPropertyName
-            : "totalLength";
-    if (properties.containsKey(lengthPropertyName)) {
-      int length = properties.getInt(lengthPropertyName, 0);
-      adContentMetadata.put("length", String.valueOf(length));
-    }
-
-    if (properties.containsKey("title")) {
-      String title = properties.getString("title");
-      adContentMetadata.put("title", title);
-    }
-
-    if (properties.containsKey("program")) {
-      String program = properties.getString("program");
-      adContentMetadata.put("program", program);
-    }
-
-    if (properties.containsKey("airdate")) {
-      String airdate = properties.getString("airdate");
-      adContentMetadata.put("airdate", airdate);
-    }
-
-    String adLoadType = String.valueOf(options.get("adLoadType"));
-    if (adLoadType.equals("dynamic")) {
-      adContentMetadata.put("adloadtype", "2");
-    } else {
-      adContentMetadata.put("adloadtype", "1");
-    }
-
-    if (options.containsKey("hasAds") && "true".equals(String.valueOf(options.get("hasAds")))) {
-      adContentMetadata.put("hasAds", "1");
-    } else {
-      adContentMetadata.put("hasAds", "0");
-    }
-
-    boolean fullEpisodeStatus = properties.getBoolean("fullEpisode", false);
-    adContentMetadata.put("isfullepisode", fullEpisodeStatus ? "y" : "sf");
-
-    adContentMetadata.put("type", "content");
 
     return adContentMetadata;
   }
