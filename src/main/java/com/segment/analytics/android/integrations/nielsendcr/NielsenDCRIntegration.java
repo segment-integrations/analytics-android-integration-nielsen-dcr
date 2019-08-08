@@ -555,4 +555,9 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
     appSdk.loadMetadata(metadata);
     logger.verbose("appSdk.loadMetadata(%s)", metadata);
   }
+
+  @Override
+  public AppSdk getUnderlyingInstance() {
+    return appSdk;
+  }
 }
