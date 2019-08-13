@@ -1,4 +1,14 @@
 
+1.2.1 / 2019-08-08
+==================
+
+  * Expose underlying Nielsen SDK instance
+
+1.2.0 / 2019-08-05
+==================
+
+  * Add setting for custom ad asset ID property name
+
 1.1.3 / 2019-07-19
 ==================
 
