@@ -374,16 +374,17 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
       Matcher m = r.matcher(finalDate);
 
       if (m.find()) {
-        finalDate =
-                m.group(1)
-                + m.group(2)
-                + m.group(3)
-                + " "
-                + m.group(4)
-                + ":"
-                + m.group(5)
-                + ":"
-                + m.group(6);
+        finalDate = new StringBuilder() //
+          .append(m.group(1))
+          .append(m.group(2))
+          .append(m.group(3))
+          .append(" ")
+          .append(m.group(4))
+          .append(":")
+          .append(m.group(5))
+          .append(":")
+          .append(m.group(6))
+          .toString();
       } else {
         throw new Error("Error parsing airdate from ISO-8601 format.");
       }
