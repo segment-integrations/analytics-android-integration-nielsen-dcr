@@ -198,7 +198,7 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
     }
 
     if (properties.containsKey("airdate")) {
-      Object airdate = formatAirdate(properties.get("airdate"));
+      String airdate = formatAirdate(properties.get("airdate"));
       contentMetadata.put("airdate", airdate);
     }
 
@@ -333,7 +333,7 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
       }
 
       if (contentProperties.containsKey("airdate")) {
-        Object airdate = formatAirdate(contentProperties.get("airdate"));
+        String airdate = formatAirdate(contentProperties.get("airdate"));
         adContentMetadata.put("airdate", airdate);
       }
 
@@ -359,7 +359,7 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
     return adContentMetadata;
   }
 
-  public Object formatAirdate(Object airdate) {
+  public String formatAirdate(Object airdate) {
     SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd' 'HH:mm:ss");
     String finalDate = String.valueOf(airdate);
 
