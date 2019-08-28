@@ -34,6 +34,7 @@ import org.skyscreamer.jsonassert.JSONCompareMode;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Date;
 
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
@@ -166,7 +167,8 @@ public class NielsenDCRTest {
                     .putValue("fullEpisode", true)
                     .putValue("podId", "segment A")
                     .putValue("playbackPosition", 70)
-                    .putValue("totalLength", 1200))
+                    .putValue("totalLength", 1200)
+                    .putValue("airdate", "2019-08-27T17:00:00Z"))
                     .integration("nielsen-dcr", nielsenOptions)
                     .build());
 
@@ -184,6 +186,7 @@ public class NielsenDCRTest {
     expected.put("clientid", "myClient");
     expected.put("subbrand", "myBrand");
     expected.put("length", "1200");
+    expected.put("airdate", "20190827 17:00:00");
 
     verify(nielsen).loadMetadata(jsonEq(expected));
   }
@@ -219,7 +222,8 @@ public class NielsenDCRTest {
                     .putValue("podId", "segment A")
                     .putValue("playbackPosition", 70)
                     .putValue("customLength", 1200)
-                    .putValue("totalLength", 1100))
+                    .putValue("totalLength", 1100)
+                    .putValue("airdate", "2019-08-27T17:00:00Z"))
                     .integration("nielsen-dcr", nielsenOptions)
                     .build());
 
@@ -237,6 +241,7 @@ public class NielsenDCRTest {
     expected.put("clientid", "myClient");
     expected.put("subbrand", "myBrand");
     expected.put("length", "1200");
+    expected.put("airdate", "20190827 17:00:00");
 
     verify(nielsen).loadMetadata(jsonEq(expected));
   }
@@ -260,7 +265,8 @@ public class NielsenDCRTest {
                     .putValue("publisher", "Turner Broadcasting System")
                     .putValue("fullEpisode", true)
                     .putValue("podId", "segment A")
-                    .putValue("playbackPosition", 70))
+                    .putValue("playbackPosition", 70)
+                    .putValue("airdate", "2019-08-27T17:00:00Z"))
                     .integration("nielsen-dcr", nielsenOptions)
                     .build());
 
@@ -274,6 +280,56 @@ public class NielsenDCRTest {
     expected.put("type", "content");
     expected.put("adloadtype", "1");
     expected.put("hasAds", "1");
+    expected.put("airdate", "20190827 17:00:00");
+
+    verify(nielsen).loadMetadata(jsonEq(expected));
+  }
+
+  @Test
+  public void videoContentStarted_airdateObject() throws JSONException {
+
+    Map<String, Object> nielsenOptions = new LinkedHashMap<>();
+    nielsenOptions.put("segB", "segmentB");
+    nielsenOptions.put("crossId2", "id");
+
+    Date date = new Date(1566259200);
+    Object formattedDate = integration.formatAirdate(date);
+
+    integration.track(
+            new TrackPayload.Builder().anonymousId("foo").event("Video Content Started").properties(new Properties() //
+                    .putValue("assetId", 123214)
+                    .putValue("title", "Look Who's Purging Now")
+                    .putValue("season", 2)
+                    .putValue("episode", 9)
+                    .putValue("genre", "cartoon")
+                    .putValue("program", "Rick and Morty")
+                    .putValue("channel", "cartoon network")
+                    .putValue("publisher", "Turner Broadcasting System")
+                    .putValue("clientId", "myClient")
+                    .putValue("subbrand", "myBrand")
+                    .putValue("fullEpisode", true)
+                    .putValue("podId", "segment A")
+                    .putValue("playbackPosition", 70)
+                    .putValue("totalLength", 1200)
+                    .putValue("airdate", date))
+                    .integration("nielsen-dcr", nielsenOptions)
+                    .build());
+
+    JSONObject expected = new JSONObject();
+    expected.put("assetid", "123214");
+    expected.put("title", "Look Who's Purging Now");
+    expected.put("program", "Rick and Morty");
+    expected.put("segB", "segmentB");
+    expected.put("pipmode", "false");
+    expected.put("isfullepisode", "y");
+    expected.put("type", "content");
+    expected.put("adloadtype", "1");
+    expected.put("hasAds", "0");
+    expected.put("crossId2", "id");
+    expected.put("clientid", "myClient");
+    expected.put("subbrand", "myBrand");
+    expected.put("length", "1200");
+    expected.put("airdate", formattedDate);
 
     verify(nielsen).loadMetadata(jsonEq(expected));
   }

@@ -13,6 +13,7 @@ import com.segment.analytics.integrations.TrackPayload;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -197,7 +198,7 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
     }
 
     if (properties.containsKey("airdate")) {
-      String airdate = properties.getString("airdate");
+      Object airdate = formatAirdate(properties.get("airdate"));
       contentMetadata.put("airdate", airdate);
     }
 
@@ -332,7 +333,7 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
       }
 
       if (contentProperties.containsKey("airdate")) {
-        String airdate = contentProperties.getString("airdate");
+        Object airdate = formatAirdate(contentProperties.get("airdate"));
         adContentMetadata.put("airdate", airdate);
       }
 
@@ -356,6 +357,37 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
     }
 
     return adContentMetadata;
+  }
+
+  public Object formatAirdate(Object airdate) {
+    SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd' 'HH:mm:ss");
+    String finalDate = String.valueOf(airdate);
+
+    // assuming 'airdate' is passed as a Date
+    try {
+      finalDate = formatter.format(airdate);
+    } catch (RuntimeException e) {
+      logger.verbose("Error parseing airdate as Date. Attempting to parse as String.");
+      // fall back to assuming 'airdate' was passed as String if above fails
+      try {
+        if (finalDate.matches("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$")) ;
+        finalDate =
+            finalDate.substring(0, 4)
+                + finalDate.substring(5, 7)
+                + finalDate.substring(8, 10)
+                + " "
+                + finalDate.substring(11, 13)
+                + ":"
+                + finalDate.substring(14, 16)
+                + ":"
+                + finalDate.substring(17, 19);
+      } catch (RuntimeException ee) {
+        throw new Error(ee);
+        //        logger.verbose("Error parseing airdate as String.");
+      }
+    }
+
+    return finalDate;
   }
 
   private void trackVideoPlayback(
