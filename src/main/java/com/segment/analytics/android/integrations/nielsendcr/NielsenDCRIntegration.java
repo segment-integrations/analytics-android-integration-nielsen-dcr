@@ -32,6 +32,7 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
   private final Logger logger;
   private TimerTask monitorHeadPos;
   private Settings settings;
+  private final SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd' 'HH:mm:ss");
   int playheadPosition;
 
   static class Settings {
@@ -360,7 +361,6 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
   }
 
   public String formatAirdate(Object airdate) {
-    SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd' 'HH:mm:ss");
     String finalDate = String.valueOf(airdate);
 
     // assuming 'airdate' is passed as a Date
