@@ -293,7 +293,7 @@ public class NielsenDCRTest {
     nielsenOptions.put("crossId2", "id");
 
     Date date = new Date(1566259200);
-    Object formattedDate = integration.formatAirdate(date);
+    String formattedDate = integration.formatAirdate(String.valueOf(date));
 
     integration.track(
             new TrackPayload.Builder().anonymousId("foo").event("Video Content Started").properties(new Properties() //

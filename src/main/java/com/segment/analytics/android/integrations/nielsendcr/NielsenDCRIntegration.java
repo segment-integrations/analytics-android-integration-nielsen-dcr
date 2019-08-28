@@ -13,6 +13,7 @@ import com.segment.analytics.integrations.TrackPayload;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Collections;
@@ -21,6 +22,8 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static com.segment.analytics.internal.Utils.isNullOrEmpty;
 
@@ -199,7 +202,7 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
     }
 
     if (properties.containsKey("airdate")) {
-      String airdate = formatAirdate(properties.get("airdate"));
+      String airdate = formatAirdate(properties.getString("airdate"));
       contentMetadata.put("airdate", airdate);
     }
 
@@ -334,7 +337,7 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
       }
 
       if (contentProperties.containsKey("airdate")) {
-        String airdate = formatAirdate(contentProperties.get("airdate"));
+        String airdate = formatAirdate(contentProperties.getString("airdate"));
         adContentMetadata.put("airdate", airdate);
       }
 
@@ -360,30 +363,38 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
     return adContentMetadata;
   }
 
-  public String formatAirdate(Object airdate) {
-    String finalDate = String.valueOf(airdate);
+  public String formatAirdate(String airdate) {
+    String finalDate = airdate;
 
-    // assuming 'airdate' is passed as a Date
+    // assuming 'airdate' was passed as ISO date string per Segment spec
     try {
-      finalDate = formatter.format(airdate);
-    } catch (RuntimeException e) {
-      logger.verbose("Error parseing airdate as Date. Attempting to parse as String.");
-      // fall back to assuming 'airdate' was passed as String if above fails
-      try {
-        if (finalDate.matches("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$")) ;
+      String pattern = "(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2})Z";
+
+      Pattern r = Pattern.compile(pattern);
+      Matcher m = r.matcher(finalDate);
+
+      if (m.find()) {
         finalDate =
-            finalDate.substring(0, 4)
-                + finalDate.substring(5, 7)
-                + finalDate.substring(8, 10)
+                m.group(1)
+                + m.group(2)
+                + m.group(3)
                 + " "
-                + finalDate.substring(11, 13)
+                + m.group(4)
                 + ":"
-                + finalDate.substring(14, 16)
+                + m.group(5)
                 + ":"
-                + finalDate.substring(17, 19);
-      } catch (RuntimeException ee) {
-        throw new Error(ee);
-        //        logger.verbose("Error parseing airdate as String.");
+                + m.group(6);
+      } else {
+        throw new Error("Error parsing airdate from ISO-8601 format.");
+      }
+    } catch (Error e) {
+      logger.verbose(e.getMessage());
+
+      // if above fails, treat as Date object
+      try {
+        finalDate = formatter.format(formatter.parse(airdate));
+      } catch (ParseException ex) {
+        logger.verbose("Error parsing Date object. Will not reformat date string.");
       }
     }
 
