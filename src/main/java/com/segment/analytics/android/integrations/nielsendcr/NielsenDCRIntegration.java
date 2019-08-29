@@ -35,8 +35,12 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
   private final Logger logger;
   private TimerTask monitorHeadPos;
   private Settings settings;
-  private final SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd' 'HH:mm:ss");
   int playheadPosition;
+
+  // reusable variables for `airdate` helper method
+  private final SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd' 'HH:mm:ss");
+  private final Pattern shortDate = Pattern.compile("^(\\d{4})-(\\d{2})-(\\d{2})$");
+  private final Pattern longDate = Pattern.compile("^(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2})Z$");
 
   static class Settings {
     String adAssetIdPropertyName;
@@ -368,30 +372,40 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
 
     // assuming 'airdate' was passed as ISO date string per Segment spec
     try {
-      String pattern = "(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2})Z";
+      Matcher s = shortDate.matcher(finalDate);
+      Matcher l = longDate.matcher(finalDate);
 
-      Pattern r = Pattern.compile(pattern);
-      Matcher m = r.matcher(finalDate);
-
-      if (m.find()) {
+      if (s.find()) {
         finalDate = new StringBuilder() //
-          .append(m.group(1))
-          .append(m.group(2))
-          .append(m.group(3))
-          .append(" ")
-          .append(m.group(4))
-          .append(":")
-          .append(m.group(5))
-          .append(":")
-          .append(m.group(6))
-          .toString();
+                .append(s.group(1))
+                .append(s.group(2))
+                .append(s.group(3))
+                .append(" ")
+                .append("00")
+                .append(":")
+                .append("00")
+                .append(":")
+                .append("00")
+                .toString();
+      } else if (l.find()) {
+        finalDate = new StringBuilder() //
+                .append(l.group(1))
+                .append(l.group(2))
+                .append(l.group(3))
+                .append(" ")
+                .append(l.group(4))
+                .append(":")
+                .append(l.group(5))
+                .append(":")
+                .append(l.group(6))
+                .toString();
       } else {
-        throw new Error("Error parsing airdate from ISO-8601 format.");
+        throw new Error("Error parsing airdate from ISO date format.");
       }
     } catch (Error e) {
       logger.verbose(e.getMessage());
 
-      // if above fails, treat as Date object
+      // if above fail, treat as Date object
       try {
         finalDate = formatter.format(formatter.parse(airdate));
       } catch (ParseException ex) {

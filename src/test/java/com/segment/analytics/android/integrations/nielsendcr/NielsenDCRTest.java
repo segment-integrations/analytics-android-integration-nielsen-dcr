@@ -266,7 +266,7 @@ public class NielsenDCRTest {
                     .putValue("fullEpisode", true)
                     .putValue("podId", "segment A")
                     .putValue("playbackPosition", 70)
-                    .putValue("airdate", "2019-08-27T17:00:00Z"))
+                    .putValue("airdate", "2019-08-27"))
                     .integration("nielsen-dcr", nielsenOptions)
                     .build());
 
@@ -280,7 +280,7 @@ public class NielsenDCRTest {
     expected.put("type", "content");
     expected.put("adloadtype", "1");
     expected.put("hasAds", "1");
-    expected.put("airdate", "20190827 17:00:00");
+    expected.put("airdate", "20190827 00:00:00");
 
     verify(nielsen).loadMetadata(jsonEq(expected));
   }
@@ -334,6 +334,39 @@ public class NielsenDCRTest {
     verify(nielsen).loadMetadata(jsonEq(expected));
   }
 
+  @Test
+  public void videoContentStarted_incorrectDate() throws JSONException {
+    integration.track(
+            new TrackPayload.Builder().anonymousId("foo").event("Video Content Started").properties(new Properties() //
+                    .putValue("assetId", 123214)
+                    .putValue("title", "Look Who's Purging Now")
+                    .putValue("season", 2)
+                    .putValue("episode", 9)
+                    .putValue("genre", "cartoon")
+                    .putValue("program", "Rick and Morty")
+                    .putValue("channel", "cartoon network")
+                    .putValue("publisher", "Turner Broadcasting System")
+                    .putValue("fullEpisode", true)
+                    .putValue("podId", "segment A")
+                    .putValue("playbackPosition", 70)
+                    .putValue("totalLength", 1200)
+                    .putValue("airdate", "what"))
+                    .build());
+
+    JSONObject expected = new JSONObject();
+    expected.put("assetid", "123214");
+    expected.put("title", "Look Who's Purging Now");
+    expected.put("program", "Rick and Morty");
+    expected.put("pipmode", "false");
+    expected.put("isfullepisode", "y");
+    expected.put("type", "content");
+    expected.put("adloadtype", "1");
+    expected.put("hasAds", "0");
+    expected.put("length", "1200");
+    expected.put("airdate", "what");
+
+    verify(nielsen).loadMetadata(jsonEq(expected));
+  }
 
   @Test
   public void videoPlaybackResumed() throws JSONException {
