@@ -40,7 +40,8 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
   // reusable variables for `airdate` helper method
   private final SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd' 'HH:mm:ss");
   private final Pattern shortDate = Pattern.compile("^(\\d{4})-(\\d{2})-(\\d{2})$");
-  private final Pattern longDate = Pattern.compile("^(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2})Z$");
+  private final Pattern longDate =
+      Pattern.compile("^(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2})Z$");
 
   static class Settings {
     String adAssetIdPropertyName;
@@ -376,7 +377,8 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
       Matcher l = longDate.matcher(finalDate);
 
       if (s.find()) {
-        finalDate = new StringBuilder() //
+        finalDate =
+            new StringBuilder() //
                 .append(s.group(1))
                 .append(s.group(2))
                 .append(s.group(3))
@@ -388,7 +390,8 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
                 .append("00")
                 .toString();
       } else if (l.find()) {
-        finalDate = new StringBuilder() //
+        finalDate =
+            new StringBuilder() //
                 .append(l.group(1))
                 .append(l.group(2))
                 .append(l.group(3))
