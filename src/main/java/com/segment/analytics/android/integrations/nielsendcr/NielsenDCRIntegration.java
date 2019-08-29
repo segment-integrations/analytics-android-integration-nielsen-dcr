@@ -38,9 +38,9 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
   int playheadPosition;
 
   // reusable variables for `airdate` helper method
-  private final SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd' 'HH:mm:ss");
-  private final Pattern shortDate = Pattern.compile("^(\\d{4})-(\\d{2})-(\\d{2})$");
-  private final Pattern longDate =
+  private static final SimpleDateFormat FORMATTER = new SimpleDateFormat("yyyyMMdd HH:mm:ss");
+  private static final Pattern SHORT_DATE = Pattern.compile("^(\\d{4})-(\\d{2})-(\\d{2})$");
+  private static final Pattern LONG_DATE =
       Pattern.compile("^(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2})Z$");
 
   static class Settings {
@@ -207,7 +207,10 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
     }
 
     if (properties.containsKey("airdate")) {
-      String airdate = formatAirdate(properties.getString("airdate"));
+      String airdate = properties.getString("airdate");
+      if (airdate != null && !airdate.isEmpty()) {
+        airdate = formatAirdate(properties.getString("airdate"));
+      }
       contentMetadata.put("airdate", airdate);
     }
 
@@ -342,7 +345,10 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
       }
 
       if (contentProperties.containsKey("airdate")) {
-        String airdate = formatAirdate(contentProperties.getString("airdate"));
+        String airdate = contentProperties.getString("airdate");
+        if (airdate != null && !airdate.isEmpty()) {
+          airdate = formatAirdate(contentProperties.getString("airdate"));
+        }
         adContentMetadata.put("airdate", airdate);
       }
 
@@ -373,8 +379,8 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
 
     // assuming 'airdate' was passed as ISO date string per Segment spec
     try {
-      Matcher s = shortDate.matcher(finalDate);
-      Matcher l = longDate.matcher(finalDate);
+      Matcher s = SHORT_DATE.matcher(finalDate);
+      Matcher l = LONG_DATE.matcher(finalDate);
 
       if (s.find()) {
         finalDate =
@@ -405,12 +411,12 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
       } else {
         throw new Error("Error parsing airdate from ISO date format.");
       }
-    } catch (Error e) {
-      logger.verbose(e.getMessage());
+    } catch (Throwable e) {
+      logger.verbose("Error parsing airdate from ISO date format.");
 
       // if above fail, treat as Date object
       try {
-        finalDate = formatter.format(formatter.parse(airdate));
+        finalDate = FORMATTER.format(FORMATTER.parse(airdate));
       } catch (ParseException ex) {
         logger.verbose("Error parsing Date object. Will not reformat date string.");
       }
