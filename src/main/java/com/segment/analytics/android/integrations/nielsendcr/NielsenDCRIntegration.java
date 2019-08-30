@@ -13,6 +13,8 @@ import com.segment.analytics.integrations.TrackPayload;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -20,6 +22,8 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static com.segment.analytics.internal.Utils.isNullOrEmpty;
 
@@ -32,6 +36,12 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
   private TimerTask monitorHeadPos;
   private Settings settings;
   int playheadPosition;
+
+  // reusable variables for `airdate` helper method
+  private static final SimpleDateFormat FORMATTER = new SimpleDateFormat("yyyyMMdd HH:mm:ss");
+  private static final Pattern SHORT_DATE = Pattern.compile("^(\\d{4})-(\\d{2})-(\\d{2})$");
+  private static final Pattern LONG_DATE =
+      Pattern.compile("^(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2})Z$");
 
   static class Settings {
     String adAssetIdPropertyName;
@@ -198,6 +208,9 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
 
     if (properties.containsKey("airdate")) {
       String airdate = properties.getString("airdate");
+      if (airdate != null && !airdate.isEmpty()) {
+        airdate = formatAirdate(properties.getString("airdate"));
+      }
       contentMetadata.put("airdate", airdate);
     }
 
@@ -333,6 +346,9 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
 
       if (contentProperties.containsKey("airdate")) {
         String airdate = contentProperties.getString("airdate");
+        if (airdate != null && !airdate.isEmpty()) {
+          airdate = formatAirdate(contentProperties.getString("airdate"));
+        }
         adContentMetadata.put("airdate", airdate);
       }
 
@@ -356,6 +372,57 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
     }
 
     return adContentMetadata;
+  }
+
+  public String formatAirdate(String airdate) {
+    String finalDate = airdate;
+
+    // assuming 'airdate' was passed as ISO date string per Segment spec
+    try {
+      Matcher s = SHORT_DATE.matcher(finalDate);
+      Matcher l = LONG_DATE.matcher(finalDate);
+
+      if (s.find()) {
+        finalDate =
+            new StringBuilder() //
+                .append(s.group(1))
+                .append(s.group(2))
+                .append(s.group(3))
+                .append(" ")
+                .append("00")
+                .append(":")
+                .append("00")
+                .append(":")
+                .append("00")
+                .toString();
+      } else if (l.find()) {
+        finalDate =
+            new StringBuilder() //
+                .append(l.group(1))
+                .append(l.group(2))
+                .append(l.group(3))
+                .append(" ")
+                .append(l.group(4))
+                .append(":")
+                .append(l.group(5))
+                .append(":")
+                .append(l.group(6))
+                .toString();
+      } else {
+        throw new Error("Error parsing airdate from ISO date format.");
+      }
+    } catch (Throwable e) {
+      logger.verbose("Error parsing airdate from ISO date format.");
+
+      // if above fail, treat as Date object
+      try {
+        finalDate = FORMATTER.format(FORMATTER.parse(airdate));
+      } catch (ParseException ex) {
+        logger.verbose("Error parsing Date object. Will not reformat date string.");
+      }
+    }
+
+    return finalDate;
   }
 
   private void trackVideoPlayback(
