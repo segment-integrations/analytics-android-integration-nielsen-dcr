@@ -214,7 +214,15 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
       contentMetadata.put("airdate", airdate);
     }
 
-    String adLoadType = String.valueOf(options.get("adLoadType"));
+    String adLoadType = "";
+    if (options.containsKey("adLoadType")) {
+      adLoadType = String.valueOf(options.get("adLoadType"));
+    }
+    if (adLoadType.isEmpty() || adLoadType.equals("null")) {
+      if (properties.containsKey("loadType")) {
+        adLoadType = properties.getString("loadType");
+      }
+    }
     if (adLoadType.equals("dynamic")) {
       contentMetadata.put("adloadtype", "2");
     } else {
@@ -349,7 +357,15 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
         adContentMetadata.put("airdate", airdate);
       }
 
-      String adLoadType = String.valueOf(options.get("adLoadType"));
+      String adLoadType = "";
+      if (options.containsKey("adLoadType")) {
+        adLoadType = String.valueOf(options.get("adLoadType"));
+      }
+      if (adLoadType.isEmpty() || adLoadType.equals("null")) {
+        if (contentProperties.containsKey("loadType")) {
+          adLoadType = String.valueOf(contentProperties.get("loadType"));
+        }
+      }
       if (adLoadType.equals("dynamic")) {
         adContentMetadata.put("adloadtype", "2");
       } else {

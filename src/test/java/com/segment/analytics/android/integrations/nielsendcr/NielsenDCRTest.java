@@ -168,6 +168,7 @@ public class NielsenDCRTest {
                     .putValue("podId", "segment A")
                     .putValue("playbackPosition", 70)
                     .putValue("totalLength", 1200)
+                    .putValue("loadType", "dynamic")
                     .putValue("airdate", "2019-08-27T17:00:00Z"))
                     .integration("nielsen-dcr", nielsenOptions)
                     .build());
@@ -180,7 +181,7 @@ public class NielsenDCRTest {
     expected.put("pipmode", "false");
     expected.put("isfullepisode", "y");
     expected.put("type", "content");
-    expected.put("adloadtype", "1");
+    expected.put("adloadtype", "2");
     expected.put("hasAds", "0");
     expected.put("crossId2", "id");
     expected.put("clientid", "myClient");
