@@ -170,8 +170,8 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
         (settings.contentAssetIdPropertyName != null)
             ? settings.contentAssetIdPropertyName
             : "assetId";
-    int contentAssetId = properties.getInt(contentAssetIdPropertyName, 0);
-    contentMetadata.put("assetid", String.valueOf(contentAssetId));
+    String contentAssetId = properties.getString(contentAssetIdPropertyName);
+    contentMetadata.put("assetid", contentAssetId);
 
     String clientIdPropertyName =
         (settings.clientIdPropertyName != null) ? settings.clientIdPropertyName : "clientId";
@@ -192,8 +192,8 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
             ? settings.contentLengthPropertyName
             : "totalLength";
     if (properties.containsKey(lengthPropertyName)) {
-      int length = properties.getInt(lengthPropertyName, 0);
-      contentMetadata.put("length", String.valueOf(length));
+      String length = properties.getString(lengthPropertyName);
+      contentMetadata.put("length", length);
     }
 
     if (properties.containsKey("title")) {
@@ -228,8 +228,7 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
     }
 
     boolean fullEpisodeStatus = properties.getBoolean("fullEpisode", false);
-    contentMetadata.put("isfullepisode", fullEpisodeStatus ? "y" : "sf");
-
+    contentMetadata.put("isfullepisode", fullEpisodeStatus ? "y" : "n");
     contentMetadata.put("type", "content");
 
     return contentMetadata;
@@ -242,8 +241,8 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
 
     String adAssetIdPropertyName =
         (settings.adAssetIdPropertyName != null) ? settings.adAssetIdPropertyName : "assetId";
-    int assetId = properties.getInt(adAssetIdPropertyName, 0);
-    adMetadata.put("assetid", String.valueOf(assetId));
+    String assetId = properties.getString(adAssetIdPropertyName);
+    adMetadata.put("assetid", assetId);
 
     String adType = properties.getString("type");
     if (adType != null && !adType.isEmpty()) {
@@ -302,14 +301,12 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
         adContentMetadata.put("segC", segC);
       }
 
-      boolean fullEpisodeStatus = false;
-
       String contentAssetIdPropertyName =
           (settings.contentAssetIdPropertyName != null)
               ? settings.contentAssetIdPropertyName
               : "contentAssetId";
-      int contentAssetId = contentProperties.getInt(contentAssetIdPropertyName, 0);
-      adContentMetadata.put("assetid", String.valueOf(contentAssetId));
+      String contentAssetId = contentProperties.getString(contentAssetIdPropertyName);
+      adContentMetadata.put("assetid", contentAssetId);
 
       String clientIdPropertyName =
           (settings.clientIdPropertyName != null) ? settings.clientIdPropertyName : "clientId";
@@ -330,8 +327,8 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
               ? settings.contentLengthPropertyName
               : "totalLength";
       if (contentProperties.containsKey(lengthPropertyName)) {
-        int length = contentProperties.getInt(lengthPropertyName, 0);
-        adContentMetadata.put("length", String.valueOf(length));
+        String length = contentProperties.getString(lengthPropertyName);
+        adContentMetadata.put("length", length);
       }
 
       if (contentProperties.containsKey("title")) {
@@ -352,8 +349,6 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
         adContentMetadata.put("airdate", airdate);
       }
 
-      fullEpisodeStatus = contentProperties.getBoolean("fullEpisode", false);
-
       String adLoadType = String.valueOf(options.get("adLoadType"));
       if (adLoadType.equals("dynamic")) {
         adContentMetadata.put("adloadtype", "2");
@@ -367,7 +362,8 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
         adContentMetadata.put("hasAds", "0");
       }
 
-      adContentMetadata.put("isfullepisode", fullEpisodeStatus ? "y" : "sf");
+      boolean fullEpisodeStatus = contentProperties.getBoolean("fullEpisode", false);
+      adContentMetadata.put("isfullepisode", fullEpisodeStatus ? "y" : "n");
       adContentMetadata.put("type", "content");
     }
 

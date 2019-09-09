@@ -496,7 +496,7 @@ public class NielsenDCRTest {
     contentExpected.put("length", "120");
     contentExpected.put("adloadtype", "1");
     contentExpected.put("hasAds", "1");
-    contentExpected.put("isfullepisode", "sf");
+    contentExpected.put("isfullepisode", "n");
 
     JSONObject adExpected = new JSONObject();
     adExpected.put("assetid", "4311");
@@ -567,7 +567,7 @@ public class NielsenDCRTest {
     contentExpected.put("length", "110");
     contentExpected.put("adloadtype", "1");
     contentExpected.put("hasAds", "1");
-    contentExpected.put("isfullepisode", "sf");
+    contentExpected.put("isfullepisode", "n");
 
     JSONObject adExpected = new JSONObject();
     adExpected.put("assetid", "4311");
