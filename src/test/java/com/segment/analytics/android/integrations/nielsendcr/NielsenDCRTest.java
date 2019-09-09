@@ -168,6 +168,7 @@ public class NielsenDCRTest {
                     .putValue("podId", "segment A")
                     .putValue("playbackPosition", 70)
                     .putValue("totalLength", 1200)
+                    .putValue("loadType", "dynamic")
                     .putValue("airdate", "2019-08-27T17:00:00Z"))
                     .integration("nielsen-dcr", nielsenOptions)
                     .build());
@@ -180,7 +181,7 @@ public class NielsenDCRTest {
     expected.put("pipmode", "false");
     expected.put("isfullepisode", "y");
     expected.put("type", "content");
-    expected.put("adloadtype", "1");
+    expected.put("adloadtype", "2");
     expected.put("hasAds", "0");
     expected.put("crossId2", "id");
     expected.put("clientid", "myClient");
@@ -496,7 +497,7 @@ public class NielsenDCRTest {
     contentExpected.put("length", "120");
     contentExpected.put("adloadtype", "1");
     contentExpected.put("hasAds", "1");
-    contentExpected.put("isfullepisode", "sf");
+    contentExpected.put("isfullepisode", "n");
 
     JSONObject adExpected = new JSONObject();
     adExpected.put("assetid", "4311");
@@ -567,7 +568,7 @@ public class NielsenDCRTest {
     contentExpected.put("length", "110");
     contentExpected.put("adloadtype", "1");
     contentExpected.put("hasAds", "1");
-    contentExpected.put("isfullepisode", "sf");
+    contentExpected.put("isfullepisode", "n");
 
     JSONObject adExpected = new JSONObject();
     adExpected.put("assetid", "4311");
