@@ -1,4 +1,10 @@
 
+1.2.3 / 2019-09-09
+==================
+
+  * Update property mappings for `assetid`, `isFullEpisode` and `length`
+  * Add fallback to look for `loadType` in event properties if `adLoadType` not in options
+
 1.2.2 / 2019-08-30
 ==================
 
