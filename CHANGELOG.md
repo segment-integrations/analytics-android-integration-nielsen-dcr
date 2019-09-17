@@ -1,4 +1,9 @@
 
+1.2.4 / 2019-09-17
+==================
+
+  * Add fallback to `load_type` (snake_case) property key if `loadType` key(camelCase) is not present
+
 1.2.3 / 2019-09-09
 ==================
 
