@@ -221,6 +221,8 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
     if (adLoadType.isEmpty() || adLoadType.equals("null")) {
       if (properties.containsKey("loadType")) {
         adLoadType = properties.getString("loadType");
+      } else if (properties.containsKey("load_type")) {
+        adLoadType = properties.getString("load_type");
       }
     }
     if (adLoadType.equals("dynamic")) {
@@ -364,6 +366,8 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
       if (adLoadType.isEmpty() || adLoadType.equals("null")) {
         if (contentProperties.containsKey("loadType")) {
           adLoadType = String.valueOf(contentProperties.get("loadType"));
+        } else if (contentProperties.containsKey("load_type")) {
+          adLoadType = String.valueOf(contentProperties.get("load_type"));
         }
       }
       if (adLoadType.equals("dynamic")) {

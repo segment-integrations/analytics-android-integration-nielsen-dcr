@@ -370,6 +370,53 @@ public class NielsenDCRTest {
   }
 
   @Test
+  public void videoContentStarted_load_type() throws JSONException {
+
+    Map<String, Object> nielsenOptions = new LinkedHashMap<>();
+    nielsenOptions.put("segB", "segmentB");
+    nielsenOptions.put("crossId2", "id");
+
+    integration.track(
+            new TrackPayload.Builder().anonymousId("foo").event("Video Content Started").properties(new Properties() //
+                    .putValue("assetId", 123214)
+                    .putValue("title", "Look Who's Purging Now")
+                    .putValue("season", 2)
+                    .putValue("episode", 9)
+                    .putValue("genre", "cartoon")
+                    .putValue("program", "Rick and Morty")
+                    .putValue("channel", "cartoon network")
+                    .putValue("publisher", "Turner Broadcasting System")
+                    .putValue("clientId", "myClient")
+                    .putValue("subbrand", "myBrand")
+                    .putValue("fullEpisode", true)
+                    .putValue("podId", "segment A")
+                    .putValue("playbackPosition", 70)
+                    .putValue("totalLength", 1200)
+                    .putValue("load_type", "dynamic")
+                    .putValue("airdate", "2019-08-27T17:00:00Z"))
+                    .integration("nielsen-dcr", nielsenOptions)
+                    .build());
+
+    JSONObject expected = new JSONObject();
+    expected.put("assetid", "123214");
+    expected.put("title", "Look Who's Purging Now");
+    expected.put("program", "Rick and Morty");
+    expected.put("segB", "segmentB");
+    expected.put("pipmode", "false");
+    expected.put("isfullepisode", "y");
+    expected.put("type", "content");
+    expected.put("adloadtype", "2");
+    expected.put("hasAds", "0");
+    expected.put("crossId2", "id");
+    expected.put("clientid", "myClient");
+    expected.put("subbrand", "myBrand");
+    expected.put("length", "1200");
+    expected.put("airdate", "20190827 17:00:00");
+
+    verify(nielsen).loadMetadata(jsonEq(expected));
+  }
+
+  @Test
   public void videoPlaybackResumed() throws JSONException {
 
     integration.track(
@@ -465,7 +512,7 @@ public class NielsenDCRTest {
     ValueMap contentMetadata = new ValueMap() //
             .putValue("podId", "adSegmentA")
             .putValue("totalLength", 120)
-            .putValue("loadType", "linear")
+            .putValue("load_type", "dynamic")
             .putValue("position", 20)
             .putValue("contentAssetId", 1234)
             .putValue("clientId", "myClient")
@@ -495,7 +542,7 @@ public class NielsenDCRTest {
     contentExpected.put("clientid", "myClient");
     contentExpected.put("subbrand", "myBrand");
     contentExpected.put("length", "120");
-    contentExpected.put("adloadtype", "1");
+    contentExpected.put("adloadtype", "2");
     contentExpected.put("hasAds", "1");
     contentExpected.put("isfullepisode", "n");
 
