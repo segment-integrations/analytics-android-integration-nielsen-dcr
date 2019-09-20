@@ -88,7 +88,6 @@ public class NielsenDCRTest {
   public void appSdkConfig() throws JSONException {
     ValueMap settings = new ValueMap();
     settings.put("appId", "12345");
-    settings.put("sfCode", true);
     settings.put("nolDevDebug", true);
 
     factory.create(settings, analytics);

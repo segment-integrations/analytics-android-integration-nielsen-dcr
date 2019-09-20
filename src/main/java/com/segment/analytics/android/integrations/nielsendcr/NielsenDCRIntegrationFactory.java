@@ -29,6 +29,8 @@ class NielsenDCRIntegrationFactory implements Integration.Factory {
   }
 
   private static final String NIELSEN_DCR_KEY = "Nielsen DCR";
+  // "sfcode" used to be a UI setting, but should now be hard-coded to "dcr" per Nielsen support
+  private static final String SF_CODE = "dcr";
 
   private final AppSDKFactory appSDKFactory;
 
@@ -59,9 +61,6 @@ class NielsenDCRIntegrationFactory implements Integration.Factory {
       return null;
     }
 
-    boolean sfcodeValue = settings.getBoolean("sfCode", false);
-    String sfCode = sfcodeValue ? "dcr" : "dcr-cert";
-
     String appId = settings.getString("appId");
 
     try {
@@ -71,7 +70,7 @@ class NielsenDCRIntegrationFactory implements Integration.Factory {
               .put("appid", appId)
               .put("appname", appname)
               .put("appversion", appversion)
-              .put("sfcode", sfCode);
+              .put("sfcode", SF_CODE);
 
       if (settings.getBoolean("nolDevDebug", false)) {
         appSdkConfig.put("nol_devDebug", "DEBUG");
