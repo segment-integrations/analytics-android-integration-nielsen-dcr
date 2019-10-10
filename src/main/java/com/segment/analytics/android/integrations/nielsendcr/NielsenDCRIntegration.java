@@ -43,6 +43,81 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
   private static final Pattern LONG_DATE =
       Pattern.compile("^(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2})Z$");
 
+  private static final Map<String, String> CONTENT_FORMATTER = getContentFormatter();
+
+  private static Map<String, String> getContentFormatter() {
+    Map<String, String> contentFormatter = new LinkedHashMap<>();
+
+    contentFormatter.put("session_id", "sessionId");
+    contentFormatter.put("asset_id", "assetId");
+    contentFormatter.put("pod_id", "podId");
+    contentFormatter.put("total_length", "totalLength");
+    contentFormatter.put("full_episode", "fullEpisode");
+    contentFormatter.put("content_asset_id", "contentAssetId");
+    contentFormatter.put("ad_asset_id", "adAssetId");
+    contentFormatter.put("load_type", "loadType");
+
+    return contentFormatter;
+  }
+
+  private static final Map<String, String> AD_FORMATTER = getAdFormatter();
+
+  private static Map<String, String> getAdFormatter() {
+    Map<String, String> adFormatter = new LinkedHashMap<>();
+
+    adFormatter.put("session_id", "sessionId");
+    adFormatter.put("asset_id", "assetId");
+    adFormatter.put("pod_id", "podId");
+    adFormatter.put("pod_position", "podPosition");
+    adFormatter.put("pod_length", "podLength");
+    adFormatter.put("total_length", "totalLength");
+    adFormatter.put("load_type", "loadType");
+
+    return adFormatter;
+  }
+
+  private static final Map<String, String> CONTENT_MAP = getContentMap();
+
+  private static Map<String, String> getContentMap() {
+    Map<String, String> contentMap = new LinkedHashMap<>();
+
+    contentMap.put("assetId", "assetid");
+    contentMap.put("contentAssetId", "assetid");
+    contentMap.put("title", "title");
+    contentMap.put("program", "program");
+
+    return contentMap;
+  }
+
+  private static final Map<String, String> AD_MAP = getAdMap();
+
+  private static Map<String, String> getAdMap() {
+    Map<String, String> adMap = new LinkedHashMap<>();
+
+    adMap.put("assetId", "assetid");
+    adMap.put("type", "type");
+    adMap.put("title", "title");
+
+    return adMap;
+  }
+
+  private ValueMap toSegmentSpec(
+      @NonNull ValueMap properties, @NonNull Map<String, String> formatter) {
+    ValueMap mappedProperties = new ValueMap();
+    mappedProperties.putAll(properties);
+
+    for (Map.Entry<String, String> entry : formatter.entrySet()) {
+      String key = entry.getKey();
+      String value = entry.getValue();
+      if (mappedProperties.get(key) != null) {
+        mappedProperties.put(value, mappedProperties.get(key));
+        mappedProperties.remove(key);
+      }
+    }
+
+    return mappedProperties;
+  }
+
   static class Settings {
     String adAssetIdPropertyName;
     String contentAssetIdPropertyName;
@@ -68,7 +143,7 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
     this.logger = logger;
   }
 
-  private void startPlayheadTimer(final Properties properties, final AppSdk nielsen) {
+  private void startPlayheadTimer(final ValueMap properties, final AppSdk nielsen) {
     if (playheadTimer != null) {
       return;
     }
@@ -113,7 +188,7 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
   }
 
   private JSONObject mapSpecialKeys(
-      @NonNull Properties properties, @NonNull Map<String, String> mapper) throws JSONException {
+      @NonNull ValueMap properties, @NonNull Map<String, String> mapper) throws JSONException {
     JSONObject metadata = new JSONObject();
 
     // Map special keys and preserve only the special keys.
@@ -130,13 +205,11 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
   }
 
   private @NonNull JSONObject buildContentMetadata(
-      @NonNull Properties properties,
-      @NonNull Map<String, ?> options,
-      @NonNull Map<String, String> mapper)
-      throws JSONException {
+      @NonNull ValueMap properties, @NonNull Map<String, ?> options) throws JSONException {
 
-    JSONObject contentMetadata = mapSpecialKeys(properties, mapper);
+    JSONObject contentMetadata = mapSpecialKeys(properties, CONTENT_MAP);
 
+    // map payload options to Nielsen content metadata fields
     if (options.containsKey("pipmode")) {
       String pipmode = String.valueOf(options.get("pipmode"));
       contentMetadata.put("pipmode", pipmode);
@@ -164,11 +237,26 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
       contentMetadata.put("segC", segC);
     }
 
+    if (options.containsKey("hasAds") && "true".equals(String.valueOf(options.get("hasAds")))) {
+      contentMetadata.put("hasAds", "1");
+    } else {
+      contentMetadata.put("hasAds", "0");
+    }
+
+    // map settings to Nielsen content metadata fields
     String contentAssetIdPropertyName =
         (settings.contentAssetIdPropertyName != null)
             ? settings.contentAssetIdPropertyName
             : "assetId";
-    String contentAssetId = properties.getString(contentAssetIdPropertyName);
+
+    String contentAssetId = "";
+    if (settings.contentAssetIdPropertyName != null) {
+      contentAssetId = properties.getString(settings.contentAssetIdPropertyName);
+    } else if (properties.getString("assetId") != null) {
+      contentAssetId = properties.getString("assetId");
+    } else {
+      contentAssetId = properties.getString("contentAssetId");
+    }
     contentMetadata.put("assetid", contentAssetId);
 
     String clientIdPropertyName =
@@ -194,16 +282,7 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
       contentMetadata.put("length", length);
     }
 
-    if (properties.containsKey("title")) {
-      String title = properties.getString("title");
-      contentMetadata.put("title", title);
-    }
-
-    if (properties.containsKey("program")) {
-      String program = properties.getString("program");
-      contentMetadata.put("program", program);
-    }
-
+    // map properties with non-String values to Nielsen content metadata fields
     if (properties.containsKey("airdate")) {
       String airdate = properties.getString("airdate");
       if (airdate != null && !airdate.isEmpty()) {
@@ -219,20 +298,12 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
     if (adLoadType.isEmpty() || adLoadType.equals("null")) {
       if (properties.containsKey("loadType")) {
         adLoadType = properties.getString("loadType");
-      } else if (properties.containsKey("load_type")) {
-        adLoadType = properties.getString("load_type");
       }
     }
     if (adLoadType.equals("dynamic")) {
       contentMetadata.put("adloadtype", "2");
     } else {
       contentMetadata.put("adloadtype", "1");
-    }
-
-    if (options.containsKey("hasAds") && "true".equals(String.valueOf(options.get("hasAds")))) {
-      contentMetadata.put("hasAds", "1");
-    } else {
-      contentMetadata.put("hasAds", "0");
     }
 
     boolean fullEpisodeStatus = properties.getBoolean("fullEpisode", false);
@@ -242,10 +313,9 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
     return contentMetadata;
   }
 
-  private @NonNull JSONObject buildAdMetadata(
-      @NonNull Properties properties, @NonNull Map<String, String> mapper) throws JSONException {
+  private @NonNull JSONObject buildAdMetadata(@NonNull ValueMap properties) throws JSONException {
 
-    JSONObject adMetadata = mapSpecialKeys(properties, mapper);
+    JSONObject adMetadata = mapSpecialKeys(properties, AD_MAP);
 
     String adAssetIdPropertyName =
         (settings.adAssetIdPropertyName != null) ? settings.adAssetIdPropertyName : "assetId";
@@ -264,130 +334,6 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
     adMetadata.put("title", title);
 
     return adMetadata;
-  }
-
-  private @NonNull JSONObject buildAdContentMetadata(
-      @NonNull Properties properties,
-      @NonNull Map<String, ?> options,
-      @NonNull Map<String, String> mapper)
-      throws JSONException {
-
-    Properties contentProperties = new Properties();
-    JSONObject adContentMetadata = new JSONObject(); // initialize to prevent null pointer exception
-
-    if (properties.containsKey("content") && !properties.getValueMap("content").isEmpty()) {
-      ValueMap content = properties.getValueMap("content");
-      contentProperties.putAll(content);
-    }
-
-    if (!contentProperties.isEmpty()) {
-
-      adContentMetadata = mapSpecialKeys(contentProperties, mapper);
-
-      if (options.containsKey("pipmode")) {
-        String pipmode = String.valueOf(options.get("pipmode"));
-        adContentMetadata.put("pipmode", pipmode);
-      } else {
-        adContentMetadata.put("pipmode", "false");
-      }
-
-      if (options.containsKey("crossId1")) {
-        String crossId1 = String.valueOf(options.get("crossId1"));
-        adContentMetadata.put("crossId1", crossId1);
-      }
-
-      if (options.containsKey("crossId2")) {
-        String crossId2 = String.valueOf(options.get("crossId2"));
-        adContentMetadata.put("crossId2", crossId2);
-      }
-
-      if (options.containsKey("segB")) {
-        String segB = String.valueOf(options.get("segB"));
-        adContentMetadata.put("segB", segB);
-      }
-
-      if (options.containsKey("segC")) {
-        String segC = String.valueOf(options.get("segC"));
-        adContentMetadata.put("segC", segC);
-      }
-
-      String contentAssetIdPropertyName =
-          (settings.contentAssetIdPropertyName != null)
-              ? settings.contentAssetIdPropertyName
-              : "contentAssetId";
-      String contentAssetId = contentProperties.getString(contentAssetIdPropertyName);
-      adContentMetadata.put("assetid", contentAssetId);
-
-      String clientIdPropertyName =
-          (settings.clientIdPropertyName != null) ? settings.clientIdPropertyName : "clientId";
-      String clientId = contentProperties.getString(clientIdPropertyName);
-      if (clientId != null && !clientId.isEmpty()) {
-        adContentMetadata.put("clientid", clientId);
-      }
-
-      String subbrandPropertyName =
-          (settings.subbrandPropertyName != null) ? settings.subbrandPropertyName : "subbrand";
-      String subbrand = contentProperties.getString(subbrandPropertyName);
-      if (subbrand != null && !subbrand.isEmpty()) {
-        adContentMetadata.put("subbrand", subbrand);
-      }
-
-      String lengthPropertyName =
-          (settings.contentLengthPropertyName != null)
-              ? settings.contentLengthPropertyName
-              : "totalLength";
-      if (contentProperties.containsKey(lengthPropertyName)) {
-        String length = contentProperties.getString(lengthPropertyName);
-        adContentMetadata.put("length", length);
-      }
-
-      if (contentProperties.containsKey("title")) {
-        String title = contentProperties.getString("title");
-        adContentMetadata.put("title", title);
-      }
-
-      if (contentProperties.containsKey("program")) {
-        String program = contentProperties.getString("program");
-        adContentMetadata.put("program", program);
-      }
-
-      if (contentProperties.containsKey("airdate")) {
-        String airdate = contentProperties.getString("airdate");
-        if (airdate != null && !airdate.isEmpty()) {
-          airdate = formatAirdate(contentProperties.getString("airdate"));
-        }
-        adContentMetadata.put("airdate", airdate);
-      }
-
-      String adLoadType = "";
-      if (options.containsKey("adLoadType")) {
-        adLoadType = String.valueOf(options.get("adLoadType"));
-      }
-      if (adLoadType.isEmpty() || adLoadType.equals("null")) {
-        if (contentProperties.containsKey("loadType")) {
-          adLoadType = String.valueOf(contentProperties.get("loadType"));
-        } else if (contentProperties.containsKey("load_type")) {
-          adLoadType = String.valueOf(contentProperties.get("load_type"));
-        }
-      }
-      if (adLoadType.equals("dynamic")) {
-        adContentMetadata.put("adloadtype", "2");
-      } else {
-        adContentMetadata.put("adloadtype", "1");
-      }
-
-      if (options.containsKey("hasAds") && "true".equals(String.valueOf(options.get("hasAds")))) {
-        adContentMetadata.put("hasAds", "1");
-      } else {
-        adContentMetadata.put("hasAds", "0");
-      }
-
-      boolean fullEpisodeStatus = contentProperties.getBoolean("fullEpisode", false);
-      adContentMetadata.put("isfullepisode", fullEpisodeStatus ? "y" : "n");
-      adContentMetadata.put("type", "content");
-    }
-
-    return adContentMetadata;
   }
 
   public String formatAirdate(String airdate) {
@@ -442,7 +388,7 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
   }
 
   private void trackVideoPlayback(
-      TrackPayload track, Properties properties, Map<String, Object> nielsenOptions)
+      TrackPayload track, ValueMap properties, Map<String, Object> nielsenOptions)
       throws JSONException {
     String event = track.event();
 
@@ -490,24 +436,18 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
       throws JSONException {
     String event = track.event();
 
-    Map<String, String> contentMapper = new LinkedHashMap<>();
-    contentMapper.put("assetId", "assetid");
-    contentMapper.put("title", "title");
-    contentMapper.put("program", "program");
-    contentMapper.put("totalLength", "length");
-    contentMapper.put("airdate", "airdate");
-
-    JSONObject contentMetadata = buildContentMetadata(properties, nielsenOptions, contentMapper);
+    ValueMap contentProperties = toSegmentSpec(properties, CONTENT_FORMATTER);
+    JSONObject contentMetadata = buildContentMetadata(contentProperties, nielsenOptions);
 
     switch (event) {
       case "Video Content Started":
-        startPlayheadTimer(properties, appSdk);
+        startPlayheadTimer(contentProperties, appSdk);
         appSdk.loadMetadata(contentMetadata);
         logger.verbose("appSdk.loadMetadata(%s)", contentMetadata);
         break;
 
       case "Video Content Playing":
-        startPlayheadTimer(properties, appSdk);
+        startPlayheadTimer(contentProperties, appSdk);
         break;
 
       case "Video Content Completed":
@@ -517,33 +457,34 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
     }
   }
 
-  public void trackVideoAd(
+  private void trackVideoAd(
       TrackPayload track, Properties properties, Map<String, Object> nielsenOptions)
       throws JSONException {
     String event = track.event();
 
-    Map<String, String> adMapper = new LinkedHashMap<>();
-    adMapper.put("assetId", "assetid");
-    adMapper.put("type", "type");
-    adMapper.put("title", "title");
+    ValueMap adProperties = toSegmentSpec(properties, AD_FORMATTER);
 
     switch (event) {
       case "Video Ad Started":
         // In case of ad `type` preroll, call `loadMetadata` with metadata values for content,
         // followed by `loadMetadata` with ad (preroll) metadata
         if ("pre-roll".equals(properties.getString("type"))) {
-          JSONObject adContentAsset = buildAdContentMetadata(properties, nielsenOptions, adMapper);
-          appSdk.loadMetadata(adContentAsset);
-          logger.verbose("appSdk.loadMetadata(%s)", adContentAsset);
+          if (properties.containsKey("content") && !properties.getValueMap("content").isEmpty()) {
+            ValueMap contentMap = properties.getValueMap("content");
+            ValueMap contentProperties = toSegmentSpec(contentMap, CONTENT_FORMATTER);
+            JSONObject adContentAsset = buildContentMetadata(contentProperties, nielsenOptions);
+            appSdk.loadMetadata(adContentAsset);
+            logger.verbose("appSdk.loadMetadata(%s)", adContentAsset);
+          }
         }
-        JSONObject adAsset = buildAdMetadata(properties, adMapper);
+        JSONObject adAsset = buildAdMetadata(adProperties);
         appSdk.loadMetadata(adAsset);
         logger.verbose("appSdk.loadMetadata(%s)", adAsset);
-        startPlayheadTimer(properties, appSdk);
+        startPlayheadTimer(adProperties, appSdk);
         break;
 
       case "Video Ad Playing":
-        startPlayheadTimer(properties, appSdk);
+        startPlayheadTimer(adProperties, appSdk);
         break;
 
       case "Video Ad Completed":

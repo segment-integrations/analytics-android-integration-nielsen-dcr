@@ -514,14 +514,14 @@ public class NielsenDCRTest {
             .putValue("totalLength", 120)
             .putValue("load_type", "dynamic")
             .putValue("position", 20)
-            .putValue("contentAssetId", 1234)
+            .putValue("contentAssetId", "1234")
             .putValue("clientId", "myClient")
             .putValue("subbrand", "myBrand")
             .putValue("playbackPosition", 0)
             .putValue("title", "Helmet Ad");
 
     ValueMap adMetadata = new ValueMap() //
-            .putValue("assetId", 4311)
+            .putValue("assetId", "4311")
             .putValue("type", "pre-roll")
             .putValue("title", "Helmet Ad");
 
@@ -591,10 +591,9 @@ public class NielsenDCRTest {
         .putValue("segB", "segmentB");
 
     ValueMap adMetadata = new ValueMap() //
-        .putValue("customAdAssetId", 4311)
+        .putValue("customAdAssetId", "4311")
             .putValue("type", "pre-roll")
-          .putValue("title", "Helmet Ad")
-            .putValue("title", "Helmet Ad");
+          .putValue("title", "Helmet Ad");
 
     Properties trackProperties = new Properties();
     trackProperties.putAll(adMetadata);
