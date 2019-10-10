@@ -76,9 +76,7 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
     playheadPosition = properties.getInt("position", 0);
     monitorHeadPos =
         new TimerTask() {
-          boolean isLiveStream =
-              "content".equals(properties.getString("type"))
-                  && properties.getBoolean("livestream", false);
+          boolean isLiveStream = properties.getBoolean("livestream", false);
 
           @Override
           public void run() {
@@ -257,6 +255,8 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
     String adType = properties.getString("type");
     if (adType != null && !adType.isEmpty()) {
       adType = adType.replace("-", "");
+    } else {
+      adType = "ad";
     }
     adMetadata.put("type", adType);
 
@@ -463,18 +463,19 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
     switch (event) {
       case "Video Playback Started":
       case "Video Playback Resumed":
+      case "Video Playback Seek Completed":
+      case "Video Playback Buffer Completed":
         startPlayheadTimer(properties, appSdk);
         appSdk.play(channelInfo);
         logger.verbose("appSdk.play(%s)", channelInfo);
         break;
       case "Video Playback Paused":
       case "Video Playback Interrupted":
+      case "Video Playback Seek Started":
+      case "Video Playback Buffer Started":
         stopPlayheadTimer();
         appSdk.stop();
         logger.verbose("appSdk.stop()");
-        break;
-      case "Video Playback Seek Completed":
-        startPlayheadTimer(properties, appSdk);
         break;
       case "Video Playback Completed":
         stopPlayheadTimer();
@@ -510,7 +511,7 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
         break;
 
       case "Video Content Completed":
-        appSdk.end();
+        appSdk.stop();
         stopPlayheadTimer();
         break;
     }
@@ -567,7 +568,10 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
       case "Video Playback Started":
       case "Video Playback Paused":
       case "Video Playback Interrupted":
+      case "Video Playback Seek Started":
       case "Video Playback Seek Completed":
+      case "Video Playback Buffer Started":
+      case "Video Playback Buffer Completed":
       case "Video Playback Resumed":
         try {
           trackVideoPlayback(track, properties, nielsenOptions);
