@@ -43,7 +43,8 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
   private static final Pattern LONG_DATE =
       Pattern.compile("^(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2})Z$");
 
-  private static final Map<String, String> CONTENT_FORMATTER = getContentFormatter();
+  private static final Map<String, String> CONTENT_FORMATTER =
+      Collections.unmodifiableMap(getContentFormatter());
 
   private static Map<String, String> getContentFormatter() {
     Map<String, String> contentFormatter = new LinkedHashMap<>();
@@ -60,7 +61,8 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
     return contentFormatter;
   }
 
-  private static final Map<String, String> AD_FORMATTER = getAdFormatter();
+  private static final Map<String, String> AD_FORMATTER =
+      Collections.unmodifiableMap(getAdFormatter());
 
   private static Map<String, String> getAdFormatter() {
     Map<String, String> adFormatter = new LinkedHashMap<>();
@@ -76,7 +78,8 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
     return adFormatter;
   }
 
-  private static final Map<String, String> CONTENT_MAP = getContentMap();
+  private static final Map<String, String> CONTENT_MAP =
+      Collections.unmodifiableMap(getContentMap());
 
   private static Map<String, String> getContentMap() {
     Map<String, String> contentMap = new LinkedHashMap<>();
@@ -89,7 +92,7 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
     return contentMap;
   }
 
-  private static final Map<String, String> AD_MAP = getAdMap();
+  private static final Map<String, String> AD_MAP = Collections.unmodifiableMap(getAdMap());
 
   private static Map<String, String> getAdMap() {
     Map<String, String> adMap = new LinkedHashMap<>();
@@ -101,6 +104,17 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
     return adMap;
   }
 
+  /**
+   * For Segment-specced video event properties, this helper method maps keys in snake_case to
+   * camelCase. The actual content and ad property mapping logic in this SDK only handles camelCase
+   * property keys.
+   *
+   * <p>Segment's video spec: https://segment.com/docs/spec/video/
+   *
+   * @param properties Segment event payload properties
+   * @param formatter Either CONTENT_FORMATTER or AD_FORMATTER
+   * @return
+   */
   private ValueMap toSegmentSpec(
       @NonNull ValueMap properties, @NonNull Map<String, String> formatter) {
     ValueMap mappedProperties = new ValueMap();
@@ -237,7 +251,9 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
       contentMetadata.put("segC", segC);
     }
 
-    if (options.containsKey("hasAds") && "true".equals(String.valueOf(options.get("hasAds")))) {
+    if (options.containsKey("hasAds")
+        && options.get("hasAds") != null
+        && "true".equals(String.valueOf(options.get("hasAds")))) {
       contentMetadata.put("hasAds", "1");
     } else {
       contentMetadata.put("hasAds", "0");
