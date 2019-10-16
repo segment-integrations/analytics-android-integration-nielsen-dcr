@@ -35,7 +35,7 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
   private final Logger logger;
   private TimerTask monitorHeadPos;
   private Settings settings;
-  int playheadPosition;
+  long playheadPosition;
 
   // reusable variables for `airdate` helper method
   private static final SimpleDateFormat FORMATTER = new SimpleDateFormat("yyyyMMdd HH:mm:ss");
@@ -107,15 +107,15 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
   /**
    * For Segment-specced video event properties, this helper method maps keys in snake_case to
    * camelCase. The actual content and ad property mapping logic in this SDK only handles camelCase
-   * property keys.
+   * property keys, even though Segment's video spec requires all keys in snake_case format.
    *
    * <p>Segment's video spec: https://segment.com/docs/spec/video/
    *
    * @param properties Segment event payload properties
    * @param formatter Either CONTENT_FORMATTER or AD_FORMATTER
-   * @return
+   * @return properties Segment event payload properties with keys formatter per Segment video spec
    */
-  private ValueMap toSegmentSpec(
+  private ValueMap toCamelCase(
       @NonNull ValueMap properties, @NonNull Map<String, String> formatter) {
     ValueMap mappedProperties = new ValueMap();
     mappedProperties.putAll(properties);
@@ -161,11 +161,10 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
     if (playheadTimer != null) {
       return;
     }
+    playheadPosition = getPlayheadPosition(properties);
     playheadTimer = new Timer();
-    playheadPosition = properties.getInt("position", 0);
     monitorHeadPos =
         new TimerTask() {
-          boolean isLiveStream = properties.getBoolean("livestream", false);
 
           @Override
           public void run() {
@@ -173,18 +172,8 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
           }
 
           void setPlayheadPosition() {
+            nielsen.setPlayheadPosition(playheadPosition);
             playheadPosition++;
-            if (!isLiveStream) {
-              nielsen.setPlayheadPosition(playheadPosition);
-              return;
-            }
-
-            // If event is livestream, ignore playheadPosition
-            // and set number of seconds from midnight of the day in UTC.
-            Calendar calendar = Calendar.getInstance();
-            long millis = calendar.getTimeInMillis();
-            long utcTime = TimeUnit.MILLISECONDS.toSeconds(millis);
-            nielsen.setPlayheadPosition(utcTime);
           }
         };
 
@@ -199,6 +188,20 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
       playheadTimer = null;
       logger.verbose("playheadTimer stopped");
     }
+  }
+
+  private long getPlayheadPosition(@NonNull ValueMap properties) {
+    int playheadPosition = properties.getInt("position", 0);
+    boolean isLiveStream = properties.getBoolean("livestream", false);
+
+    if (!isLiveStream) {
+      return playheadPosition;
+    }
+
+    Calendar calendar = Calendar.getInstance();
+    long millis = calendar.getTimeInMillis();
+    long utcTime = TimeUnit.MILLISECONDS.toSeconds(millis) + playheadPosition;
+    return utcTime;
   }
 
   private JSONObject mapSpecialKeys(
@@ -260,12 +263,7 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
     }
 
     // map settings to Nielsen content metadata fields
-    String contentAssetIdPropertyName =
-        (settings.contentAssetIdPropertyName != null)
-            ? settings.contentAssetIdPropertyName
-            : "assetId";
-
-    String contentAssetId = "";
+    String contentAssetId;
     if (settings.contentAssetIdPropertyName != null) {
       contentAssetId = properties.getString(settings.contentAssetIdPropertyName);
     } else if (properties.getString("assetId") != null) {
@@ -452,7 +450,7 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
       throws JSONException {
     String event = track.event();
 
-    ValueMap contentProperties = toSegmentSpec(properties, CONTENT_FORMATTER);
+    ValueMap contentProperties = toCamelCase(properties, CONTENT_FORMATTER);
     JSONObject contentMetadata = buildContentMetadata(contentProperties, nielsenOptions);
 
     switch (event) {
@@ -478,7 +476,7 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
       throws JSONException {
     String event = track.event();
 
-    ValueMap adProperties = toSegmentSpec(properties, AD_FORMATTER);
+    ValueMap adProperties = toCamelCase(properties, AD_FORMATTER);
 
     switch (event) {
       case "Video Ad Started":
@@ -487,7 +485,7 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
         if ("pre-roll".equals(properties.getString("type"))) {
           if (properties.containsKey("content") && !properties.getValueMap("content").isEmpty()) {
             ValueMap contentMap = properties.getValueMap("content");
-            ValueMap contentProperties = toSegmentSpec(contentMap, CONTENT_FORMATTER);
+            ValueMap contentProperties = toCamelCase(contentMap, CONTENT_FORMATTER);
             JSONObject adContentAsset = buildContentMetadata(contentProperties, nielsenOptions);
             appSdk.loadMetadata(adContentAsset);
             logger.verbose("appSdk.loadMetadata(%s)", adContentAsset);
