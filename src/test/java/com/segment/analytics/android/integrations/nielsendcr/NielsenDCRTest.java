@@ -145,6 +145,29 @@ public class NielsenDCRTest {
   }
 
   @Test
+  public void videoPlaybackInterrupted() {
+
+    Map<String, Object> nielsenOptions = new LinkedHashMap<>();
+    nielsenOptions.put("channelName", "exampleChannelName");
+
+    integration.track(new TrackPayload.Builder().anonymousId("foo") //
+            .event("Video Playback Interrupted")
+            .properties(new Properties() //
+                    .putValue("assetId", 1234)
+                    .putValue("adType", "mid-roll")
+                    .putValue("totalLength", 100)
+                    .putValue("videoPlayer", "vimeo")
+                    .putValue("position", 10)
+                    .putValue("fullScreen", true)
+                    .putValue("bitrate", 50)
+                    .putValue("sound", 80))
+            .integration("nielsen-dcr", nielsenOptions)
+            .build());
+
+    verify(nielsen).end();
+  }
+
+  @Test
   public void videoContentStarted() throws JSONException {
 
     Map<String, Object> nielsenOptions = new LinkedHashMap<>();

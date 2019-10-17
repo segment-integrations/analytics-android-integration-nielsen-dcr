@@ -104,34 +104,6 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
     return adMap;
   }
 
-  /**
-   * For Segment-specced video event properties, this helper method maps keys in snake_case to
-   * camelCase. The actual content and ad property mapping logic in this SDK only handles camelCase
-   * property keys, even though Segment's video spec requires all keys in snake_case format.
-   *
-   * <p>Segment's video spec: https://segment.com/docs/spec/video/
-   *
-   * @param properties Segment event payload properties
-   * @param formatter Either CONTENT_FORMATTER or AD_FORMATTER
-   * @return properties Segment event payload properties with keys formatter per Segment video spec
-   */
-  private ValueMap toCamelCase(
-      @NonNull ValueMap properties, @NonNull Map<String, String> formatter) {
-    ValueMap mappedProperties = new ValueMap();
-    mappedProperties.putAll(properties);
-
-    for (Map.Entry<String, String> entry : formatter.entrySet()) {
-      String key = entry.getKey();
-      String value = entry.getValue();
-      if (mappedProperties.get(key) != null) {
-        mappedProperties.put(value, mappedProperties.get(key));
-        mappedProperties.remove(key);
-      }
-    }
-
-    return mappedProperties;
-  }
-
   static class Settings {
     String adAssetIdPropertyName;
     String contentAssetIdPropertyName;
@@ -202,6 +174,34 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
     long millis = calendar.getTimeInMillis();
     long utcTime = TimeUnit.MILLISECONDS.toSeconds(millis) + playheadPosition;
     return utcTime;
+  }
+
+  /**
+   * For Segment-specced video event properties, this helper method maps keys in snake_case to
+   * camelCase. The actual content and ad property mapping logic in this SDK only handles camelCase
+   * property keys, even though Segment's video spec requires all keys in snake_case format.
+   *
+   * <p>Segment's video spec: https://segment.com/docs/spec/video/
+   *
+   * @param properties Segment event payload properties
+   * @param formatter Either CONTENT_FORMATTER or AD_FORMATTER
+   * @return properties Segment event payload properties with keys formatter per Segment video spec
+   */
+  private ValueMap toCamelCase(
+      @NonNull ValueMap properties, @NonNull Map<String, String> formatter) {
+    ValueMap mappedProperties = new ValueMap();
+    mappedProperties.putAll(properties);
+
+    for (Map.Entry<String, String> entry : formatter.entrySet()) {
+      String key = entry.getKey();
+      String value = entry.getValue();
+      if (mappedProperties.get(key) != null) {
+        mappedProperties.put(value, mappedProperties.get(key));
+        mappedProperties.remove(key);
+      }
+    }
+
+    return mappedProperties;
   }
 
   private JSONObject mapSpecialKeys(
@@ -430,13 +430,13 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
         logger.verbose("appSdk.play(%s)", channelInfo);
         break;
       case "Video Playback Paused":
-      case "Video Playback Interrupted":
       case "Video Playback Seek Started":
       case "Video Playback Buffer Started":
         stopPlayheadTimer();
         appSdk.stop();
         logger.verbose("appSdk.stop()");
         break;
+      case "Video Playback Interrupted":
       case "Video Playback Completed":
         stopPlayheadTimer();
         appSdk.end();
