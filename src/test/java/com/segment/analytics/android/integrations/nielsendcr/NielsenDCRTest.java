@@ -88,7 +88,6 @@ public class NielsenDCRTest {
   public void appSdkConfig() throws JSONException {
     ValueMap settings = new ValueMap();
     settings.put("appId", "12345");
-    settings.put("sfCode", true);
     settings.put("nolDevDebug", true);
 
     factory.create(settings, analytics);
@@ -135,7 +134,7 @@ public class NielsenDCRTest {
             .putValue("adType", "mid-roll")
             .putValue("totalLength", 100)
             .putValue("videoPlayer", "vimeo")
-            .putValue("playbackPosition", 10)
+            .putValue("position", 10)
             .putValue("fullScreen", true)
             .putValue("bitrate", 50)
             .putValue("sound", 80))
@@ -143,6 +142,29 @@ public class NielsenDCRTest {
         .build());
 
     verify(nielsen).stop();
+  }
+
+  @Test
+  public void videoPlaybackInterrupted() {
+
+    Map<String, Object> nielsenOptions = new LinkedHashMap<>();
+    nielsenOptions.put("channelName", "exampleChannelName");
+
+    integration.track(new TrackPayload.Builder().anonymousId("foo") //
+            .event("Video Playback Interrupted")
+            .properties(new Properties() //
+                    .putValue("assetId", 1234)
+                    .putValue("adType", "mid-roll")
+                    .putValue("totalLength", 100)
+                    .putValue("videoPlayer", "vimeo")
+                    .putValue("position", 10)
+                    .putValue("fullScreen", true)
+                    .putValue("bitrate", 50)
+                    .putValue("sound", 80))
+            .integration("nielsen-dcr", nielsenOptions)
+            .build());
+
+    verify(nielsen).end();
   }
 
   @Test
@@ -166,7 +188,7 @@ public class NielsenDCRTest {
                     .putValue("subbrand", "myBrand")
                     .putValue("fullEpisode", true)
                     .putValue("podId", "segment A")
-                    .putValue("playbackPosition", 70)
+                    .putValue("position", 70)
                     .putValue("totalLength", 1200)
                     .putValue("loadType", "dynamic")
                     .putValue("airdate", "2019-08-27T17:00:00Z"))
@@ -221,7 +243,7 @@ public class NielsenDCRTest {
                     .putValue("customSubbrand", "myBrand")
                     .putValue("fullEpisode", true)
                     .putValue("podId", "segment A")
-                    .putValue("playbackPosition", 70)
+                    .putValue("position", 70)
                     .putValue("customLength", 1200)
                     .putValue("totalLength", 1100)
                     .putValue("airdate", "2019-08-27T17:00:00Z"))
@@ -266,7 +288,7 @@ public class NielsenDCRTest {
                     .putValue("publisher", "Turner Broadcasting System")
                     .putValue("fullEpisode", true)
                     .putValue("podId", "segment A")
-                    .putValue("playbackPosition", 70)
+                    .putValue("position", 70)
                     .putValue("airdate", "2019-08-27"))
                     .integration("nielsen-dcr", nielsenOptions)
                     .build());
@@ -310,7 +332,7 @@ public class NielsenDCRTest {
                     .putValue("subbrand", "myBrand")
                     .putValue("fullEpisode", true)
                     .putValue("podId", "segment A")
-                    .putValue("playbackPosition", 70)
+                    .putValue("position", 70)
                     .putValue("totalLength", 1200)
                     .putValue("airdate", date))
                     .integration("nielsen-dcr", nielsenOptions)
@@ -349,7 +371,7 @@ public class NielsenDCRTest {
                     .putValue("publisher", "Turner Broadcasting System")
                     .putValue("fullEpisode", true)
                     .putValue("podId", "segment A")
-                    .putValue("playbackPosition", 70)
+                    .putValue("position", 70)
                     .putValue("totalLength", 1200)
                     .putValue("airdate", "what"))
                     .build());
@@ -390,7 +412,7 @@ public class NielsenDCRTest {
                     .putValue("subbrand", "myBrand")
                     .putValue("fullEpisode", true)
                     .putValue("podId", "segment A")
-                    .putValue("playbackPosition", 70)
+                    .putValue("position", 70)
                     .putValue("totalLength", 1200)
                     .putValue("load_type", "dynamic")
                     .putValue("airdate", "2019-08-27T17:00:00Z"))
@@ -425,7 +447,7 @@ public class NielsenDCRTest {
             .putValue("adType", "post-roll")
             .putValue("totalLength", 100)
             .putValue("videoPlayer", "youtube")
-            .putValue("playbackPosition", 60)
+            .putValue("position", 60)
             .putValue("fullScreen", true)
             .putValue("bitrate", 500)
             .putValue("sound", 80)).build());
@@ -446,7 +468,7 @@ public class NielsenDCRTest {
             .putValue("podId", "adSegmentA")
             .putValue("type", "mid-roll")
             .putValue("totalLength", 120)
-            .putValue("playbackPosition", 0)
+            .putValue("position", 0)
             .putValue("title", "Helmet Ad")).build());
 
     JSONObject expected = new JSONObject();
@@ -468,7 +490,7 @@ public class NielsenDCRTest {
                     .putValue("podId", "adSegmentA")
                     .putValue("type", "mid-roll")
                     .putValue("totalLength", 120)
-                    .putValue("playbackPosition", 0)
+                    .putValue("position", 0)
                     .putValue("title", "Helmet Ad")).build());
 
     JSONObject expected = new JSONObject();
@@ -491,7 +513,7 @@ public class NielsenDCRTest {
             .putValue("loadType", "linear")
             .putValue("position", 20)
             .putValue("contentAssetId", 1234)
-            .putValue("playbackPosition", 0)
+            .putValue("position", 0)
             .putValue("title", "Helmet Ad")).build());
 
     JSONObject adExpected = new JSONObject();
@@ -514,14 +536,14 @@ public class NielsenDCRTest {
             .putValue("totalLength", 120)
             .putValue("load_type", "dynamic")
             .putValue("position", 20)
-            .putValue("contentAssetId", 1234)
+            .putValue("contentAssetId", "1234")
             .putValue("clientId", "myClient")
             .putValue("subbrand", "myBrand")
-            .putValue("playbackPosition", 0)
+            .putValue("position", 0)
             .putValue("title", "Helmet Ad");
 
     ValueMap adMetadata = new ValueMap() //
-            .putValue("assetId", 4311)
+            .putValue("assetId", "4311")
             .putValue("type", "pre-roll")
             .putValue("title", "Helmet Ad");
 
@@ -585,16 +607,15 @@ public class NielsenDCRTest {
         .putValue("customClientId", "myClient")
         .putValue("subbrand", "badBrand")
         .putValue("customSubbrand", "myBrand")
-        .putValue("playbackPosition", 0)
+        .putValue("position", 0)
         .putValue("title", "Helmet Ad")
         .putValue("hasAds", "1")
         .putValue("segB", "segmentB");
 
     ValueMap adMetadata = new ValueMap() //
-        .putValue("customAdAssetId", 4311)
+        .putValue("customAdAssetId", "4311")
             .putValue("type", "pre-roll")
-          .putValue("title", "Helmet Ad")
-            .putValue("title", "Helmet Ad");
+          .putValue("title", "Helmet Ad");
 
     Properties trackProperties = new Properties();
     trackProperties.putAll(adMetadata);
@@ -642,7 +663,7 @@ public class NielsenDCRTest {
             .putValue("podId", "adSegmentb")
             .putValue("type", "mid-roll")
             .putValue("totalLength", 100)
-            .putValue("playbackPosition", 100)
+            .putValue("position", 100)
             .putValue("title", "Helmet Ad")).build());
 
     verify(nielsen).stop();
