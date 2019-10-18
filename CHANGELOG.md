@@ -1,3 +1,12 @@
+1.3.0 / 2019-10-18
+==================
+
+  * [DEST-1240]
+  * Supports playback events "Video Playback Seek Started", "Video Playback Buffer Started"   and "Video Playback Buffer Completed".
+  * Supports both `snake_case` and `camelCase` specced video properties.
+  * `sfCode` setting hard-coded to "dcr" per Nielsen request.
+  * Timer supports livestream offset as value of "position" property.
+  * Updates "playheadPosition" property to "position" in unit tests.
 
 1.2.4 / 2019-09-17
 ==================
