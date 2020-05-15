@@ -133,7 +133,7 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
     if (playheadTimer != null) {
       return;
     }
-    playheadPosition = getPlayheadPosition(properties);
+    playheadPosition = getPlayheadPosition(properties, this.settings);
     playheadTimer = new Timer();
     monitorHeadPos =
         new TimerTask() {
@@ -162,9 +162,10 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
     }
   }
 
-  private long getPlayheadPosition(@NonNull ValueMap properties) {
+  private long getPlayheadPosition(@NonNull ValueMap properties,@NonNull ValueMap settings ) {
     int playheadPosition = properties.getInt("position", 0);
     boolean isLiveStream = properties.getBoolean("livestream", false);
+    boolean fallbackToCurrentTime = settings.getBoolean("sendCurrentTimeLivestream", false);
 
     if (!isLiveStream) {
       return playheadPosition;
@@ -172,7 +173,11 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
 
     Calendar calendar = Calendar.getInstance();
     long millis = calendar.getTimeInMillis();
-    long utcTime = TimeUnit.MILLISECONDS.toSeconds(millis) + playheadPosition;
+    if (settings.getBoolean("sendCurrentTimeLivestream")){
+        long utcTime = TimeUnit.MILLISECONDS.toSeconds(millis);
+    } else {
+        long utcTime = TimeUnit.MILLISECONDS.toSeconds(millis) + playheadPosition;
+    }
     return utcTime;
   }
 
