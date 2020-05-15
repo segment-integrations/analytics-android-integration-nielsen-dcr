@@ -45,6 +45,7 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
 
   private static final Map<String, String> CONTENT_FORMATTER =
       Collections.unmodifiableMap(getContentFormatter());
+  private ValueMap properties;
 
   private static Map<String, String> getContentFormatter() {
     Map<String, String> contentFormatter = new LinkedHashMap<>();
@@ -111,6 +112,7 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
     String clientIdPropertyName;
     String subbrandPropertyName;
     String contentLengthPropertyName;
+    Boolean sendCurrentTimeLivestream;
 
     Settings() {
       // Null by default
@@ -121,6 +123,7 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
       subbrandPropertyName = null;
       contentLengthPropertyName = null;
     }
+
   }
 
   NielsenDCRIntegration(AppSdk appSdk, Settings settings, Logger logger) {
@@ -133,7 +136,7 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
     if (playheadTimer != null) {
       return;
     }
-    playheadPosition = getPlayheadPosition(properties, this.settings);
+    playheadPosition = getPlayheadPosition(properties);
     playheadTimer = new Timer();
     monitorHeadPos =
         new TimerTask() {
@@ -162,10 +165,9 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
     }
   }
 
-  private long getPlayheadPosition(@NonNull ValueMap properties,@NonNull ValueMap settings ) {
+  private long getPlayheadPosition(@NonNull ValueMap properties) {
     int playheadPosition = properties.getInt("position", 0);
     boolean isLiveStream = properties.getBoolean("livestream", false);
-    boolean fallbackToCurrentTime = settings.getBoolean("sendCurrentTimeLivestream", false);
 
     if (!isLiveStream) {
       return playheadPosition;
@@ -173,12 +175,13 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
 
     Calendar calendar = Calendar.getInstance();
     long millis = calendar.getTimeInMillis();
-    if (settings.getBoolean("sendCurrentTimeLivestream")){
-        long utcTime = TimeUnit.MILLISECONDS.toSeconds(millis);
+    if (settings.sendCurrentTimeLivestream){
+        long currentUtcTime = TimeUnit.MILLISECONDS.toSeconds(millis);
+        return currentUtcTime;
     } else {
-        long utcTime = TimeUnit.MILLISECONDS.toSeconds(millis) + playheadPosition;
+        long utcOffsetTime = TimeUnit.MILLISECONDS.toSeconds(millis) + playheadPosition;
+        return utcOffsetTime;
     }
-    return utcTime;
   }
 
   /**
