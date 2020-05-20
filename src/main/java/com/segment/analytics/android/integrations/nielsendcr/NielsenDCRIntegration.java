@@ -45,6 +45,7 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
 
   private static final Map<String, String> CONTENT_FORMATTER =
       Collections.unmodifiableMap(getContentFormatter());
+  private ValueMap properties;
 
   private static Map<String, String> getContentFormatter() {
     Map<String, String> contentFormatter = new LinkedHashMap<>();
@@ -111,6 +112,7 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
     String clientIdPropertyName;
     String subbrandPropertyName;
     String contentLengthPropertyName;
+    Boolean sendCurrentTimeLivestream;
 
     Settings() {
       // Null by default
@@ -172,8 +174,13 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
 
     Calendar calendar = Calendar.getInstance();
     long millis = calendar.getTimeInMillis();
-    long utcTime = TimeUnit.MILLISECONDS.toSeconds(millis) + playheadPosition;
-    return utcTime;
+    if (settings.sendCurrentTimeLivestream) {
+      long currentUtcTime = TimeUnit.MILLISECONDS.toSeconds(millis);
+      return currentUtcTime;
+    } else {
+      long utcOffsetTime = TimeUnit.MILLISECONDS.toSeconds(millis) + playheadPosition;
+      return utcOffsetTime;
+    }
   }
 
   /**

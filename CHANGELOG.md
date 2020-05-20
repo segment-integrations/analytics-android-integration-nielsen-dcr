@@ -1,3 +1,7 @@
+1.3.1 / 2020-05-19
+==================
+  * Updates `getPlayheadPosition` to set the `playheadPosition` to the `currentTime` when the new setting `sendCurrentTimeLivestream` is enabled on livestream videos.
+
 1.3.0 / 2019-10-18
 ==================
 
@@ -58,7 +62,7 @@
   * Update/java fmt plugin (#3)
   * Update android-sdk license (#2)
   * Prepare next development version.
-  
+
 1.0.0-beta / 2017-09-13
 ===================================
 
