@@ -123,7 +123,6 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
       subbrandPropertyName = null;
       contentLengthPropertyName = null;
     }
-
   }
 
   NielsenDCRIntegration(AppSdk appSdk, Settings settings, Logger logger) {
@@ -175,12 +174,12 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
 
     Calendar calendar = Calendar.getInstance();
     long millis = calendar.getTimeInMillis();
-    if (settings.sendCurrentTimeLivestream){
-        long currentUtcTime = TimeUnit.MILLISECONDS.toSeconds(millis);
-        return currentUtcTime;
+    if (settings.sendCurrentTimeLivestream) {
+      long currentUtcTime = TimeUnit.MILLISECONDS.toSeconds(millis);
+      return currentUtcTime;
     } else {
-        long utcOffsetTime = TimeUnit.MILLISECONDS.toSeconds(millis) + playheadPosition;
-        return utcOffsetTime;
+      long utcOffsetTime = TimeUnit.MILLISECONDS.toSeconds(millis) + playheadPosition;
+      return utcOffsetTime;
     }
   }
 
