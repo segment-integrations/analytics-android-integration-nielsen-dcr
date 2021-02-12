@@ -41,7 +41,10 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
   private static final SimpleDateFormat FORMATTER = new SimpleDateFormat("yyyyMMdd HH:mm:ss");
   private static final Pattern SHORT_DATE = Pattern.compile("^(\\d{4})-(\\d{2})-(\\d{2})$");
   private static final Pattern LONG_DATE =
-      Pattern.compile("^(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2})Z$");
+      Pattern.compile("^(\\d{4})-(\\d{2})-(\\d{2})[tT](\\d{2}):(\\d{2}):(\\d{2})[zZ]$");
+  // add millisecond date pattern for longer dates; accept upper or lowercase T and Z
+  private static final Pattern MS_DATE =
+      Pattern.compile("^(\\d{4})-(\\d{2})-(\\d{2})[tT](\\d{2}):(\\d{2}):(\\d{2}).(\\d{3})[zZ]$");
 
   private static final Map<String, String> CONTENT_FORMATTER =
       Collections.unmodifiableMap(getContentFormatter());
@@ -112,6 +115,7 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
     String clientIdPropertyName;
     String subbrandPropertyName;
     String contentLengthPropertyName;
+    String customSectionProperty;
     Boolean sendCurrentTimeLivestream;
 
     Settings() {
@@ -122,6 +126,7 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
       clientIdPropertyName = null;
       subbrandPropertyName = null;
       contentLengthPropertyName = null;
+      customSectionProperty = null;
     }
   }
 
@@ -147,6 +152,7 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
 
           void setPlayheadPosition() {
             nielsen.setPlayheadPosition(playheadPosition);
+            // ++ postfixed means we report the original position and then increment by 1 which is desired behavior for Nielsen
             playheadPosition++;
           }
         };
@@ -364,6 +370,7 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
     try {
       Matcher s = SHORT_DATE.matcher(finalDate);
       Matcher l = LONG_DATE.matcher(finalDate);
+      Matcher m = MS_DATE.matcher(finalDate);
 
       if (s.find()) {
         finalDate =
@@ -391,6 +398,19 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
                 .append(":")
                 .append(l.group(6))
                 .toString();
+      } else if (m.find()) {
+        finalDate =
+            new StringBuilder() //
+                .append(m.group(1))
+                .append(m.group(2))
+                .append(m.group(3))
+                .append(" ")
+                .append(m.group(4))
+                .append(":")
+                .append(m.group(5))
+                .append(":")
+                .append(m.group(6))
+                .toString();
       } else {
         throw new Error("Error parsing airdate from ISO date format.");
       }
@@ -413,6 +433,9 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
       throws JSONException {
     String event = track.event();
 
+    ValueMap contentProperties = toCamelCase(properties, CONTENT_FORMATTER);
+    JSONObject contentMetadata = buildContentMetadata(contentProperties, nielsenOptions);
+
     JSONObject channelInfo = new JSONObject();
 
     if (nielsenOptions.containsKey("channelName")) {
@@ -428,7 +451,14 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
     }
 
     switch (event) {
+      // Nielsen requires we load content metadata and call play upon playback start
       case "Video Playback Started":
+        appSdk.loadMetadata(contentMetadata);
+        logger.verbose("appSdk.loadMetadata(%s)", contentMetadata);
+        startPlayheadTimer(properties, appSdk);
+        appSdk.play(channelInfo);
+        logger.verbose("appSdk.play(%s)", channelInfo);
+        break;
       case "Video Playback Resumed":
       case "Video Playback Seek Completed":
       case "Video Playback Buffer Completed":
@@ -439,11 +469,12 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
       case "Video Playback Paused":
       case "Video Playback Seek Started":
       case "Video Playback Buffer Started":
+      case "Video Playback Interrupted":
+      case "Video Playback Exited":
         stopPlayheadTimer();
         appSdk.stop();
         logger.verbose("appSdk.stop()");
         break;
-      case "Video Playback Interrupted":
       case "Video Playback Completed":
         stopPlayheadTimer();
         appSdk.end();
@@ -564,7 +595,12 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
 
   @Override
   public void screen(ScreenPayload screen) {
-    String name = screen.name();
+    String name;
+    if (settings.customSectionProperty != null) {
+       name = properties.getString(settings.customSectionProperty);
+    } else {
+       name = screen.name();
+    }
     JSONObject metadata = new JSONObject();
 
     Map<String, Object> nielsenOptions = screen.integrations().getValueMap("nielsen-dcr");
