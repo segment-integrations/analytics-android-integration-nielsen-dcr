@@ -60,8 +60,8 @@ dependencies {
         // values to global gradle.properties file
         // values to global gradle.properties file
         // See https://engineeringportal.nielsen.com/docs/Digital_Measurement_Android_Artifactory_Guide
-          username = NIELSEN_USER
-          password = NIELSEN_AUTHCODE
+        username = NIELSEN_USER
+        password = NIELSEN_AUTHCODE
       }
       authentication {
         basic(BasicAuthentication)
