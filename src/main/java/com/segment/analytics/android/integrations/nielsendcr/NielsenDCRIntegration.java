@@ -566,6 +566,8 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
       case "Video Playback Buffer Started":
       case "Video Playback Buffer Completed":
       case "Video Playback Resumed":
+      case "Video Playback Exited":
+      case "Video Playback Completed":
         try {
           trackVideoPlayback(track, properties, nielsenOptions);
         } catch (JSONException e) {
@@ -597,7 +599,7 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
   public void screen(ScreenPayload screen) {
     String name;
     if (settings.customSectionProperty != null) {
-       name = properties.getString(settings.customSectionProperty);
+       name = screen.properties().getString(settings.customSectionProperty);
     } else {
        name = screen.name();
     }
