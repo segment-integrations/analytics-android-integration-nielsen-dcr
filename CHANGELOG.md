@@ -1,3 +1,10 @@
+1.3.2 / 2021-03-26
+==================
+  * Add `sendCurrentTimeLivestream` setting to instantiation code in `NielsenDCRIntegrationFactory`.
+  * Add fallback to `false` for `sendCurrentTimeLivestream` setting.
+  * Add unit test for "Video Playback Started" for livestream videos.
+  * Update build dependencies.
+
 1.3.1 / 2020-05-19
 ==================
   * Updates `getPlayheadPosition` to set the `playheadPosition` to the `currentTime` when the new setting `sendCurrentTimeLivestream` is enabled on livestream videos.
