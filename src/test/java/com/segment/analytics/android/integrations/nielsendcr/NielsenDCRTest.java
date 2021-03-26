@@ -122,6 +122,26 @@ public class NielsenDCRTest {
   }
 
   @Test
+  public void videoPlaybackStarted_livestream() throws JSONException {
+    integration.track(
+        new TrackPayload.Builder().anonymousId("foo").event("Video Playback Started").properties(new Properties() //
+            .putValue("assetId", 1234)
+            .putValue("adType", "pre-roll")
+            .putValue("totalLength", 120)
+            .putValue("videoPlayer", "youtube")
+            .putValue("sound", 80)
+            .putValue("bitrate", 40)
+            .putValue("livestream", true)
+            .putValue("fullScreen", true)).build());
+
+    JSONObject expected = new JSONObject();
+    expected.put("channelName", "defaultChannelName");
+    expected.put("mediaURL", "");
+
+    verify(nielsen).play(jsonEq(expected));
+  }
+
+  @Test
   public void videoPlaybackPaused() {
 
     Map<String, Object> nielsenOptions = new LinkedHashMap<>();

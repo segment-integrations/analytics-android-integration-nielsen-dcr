@@ -103,6 +103,9 @@ class NielsenDCRIntegrationFactory implements Integration.Factory {
         integrationSettings.contentLengthPropertyName = contentLengthPropertyName;
       }
 
+      Boolean sendCurrentTimeLivestream = settings.getBoolean("sendCurrentTimeLivestream", false);
+      integrationSettings.sendCurrentTimeLivestream = sendCurrentTimeLivestream;
+
       return new NielsenDCRIntegration(appSdk, integrationSettings, logger);
     } catch (JSONException e) {
       logger.error(e, "Could not initialize settings.");
