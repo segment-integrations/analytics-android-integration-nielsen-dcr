@@ -452,7 +452,7 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
     }
 
     switch (event) {
-      // Nielsen requires we load content metadata and call play upon playback start
+        // Nielsen requires we load content metadata and call play upon playback start
       case "Video Playback Started":
         appSdk.loadMetadata(contentMetadata);
         logger.verbose("appSdk.loadMetadata(%s)", contentMetadata);
@@ -600,9 +600,9 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
   public void screen(ScreenPayload screen) {
     String name;
     if (settings.customSectionProperty != null) {
-       name = screen.properties().getString(settings.customSectionProperty);
+      name = screen.properties().getString(settings.customSectionProperty);
     } else {
-       name = screen.name();
+      name = screen.name();
     }
     JSONObject metadata = new JSONObject();
 
