@@ -184,8 +184,54 @@ public class NielsenDCRTest {
             .integration("nielsen-dcr", nielsenOptions)
             .build());
 
-    verify(nielsen).end();
+    verify(nielsen).stop();
   }
+
+    @Test
+    public void videoPlaybackExited() {
+
+        Map<String, Object> nielsenOptions = new LinkedHashMap<>();
+        nielsenOptions.put("channelName", "exampleChannelName");
+
+        integration.track(new TrackPayload.Builder().anonymousId("foo") //
+                .event("Video Playback Exited")
+                .properties(new Properties() //
+                        .putValue("assetId", 1234)
+                        .putValue("adType", "mid-roll")
+                        .putValue("totalLength", 100)
+                        .putValue("videoPlayer", "vimeo")
+                        .putValue("position", 10)
+                        .putValue("fullScreen", true)
+                        .putValue("bitrate", 50)
+                        .putValue("sound", 80))
+                .integration("nielsen-dcr", nielsenOptions)
+                .build());
+
+        verify(nielsen).stop();
+    }
+
+    @Test
+    public void videoPlaybackCompleted() {
+
+        Map<String, Object> nielsenOptions = new LinkedHashMap<>();
+        nielsenOptions.put("channelName", "exampleChannelName");
+
+        integration.track(new TrackPayload.Builder().anonymousId("foo") //
+                .event("Video Playback Completed")
+                .properties(new Properties() //
+                        .putValue("assetId", 1234)
+                        .putValue("adType", "mid-roll")
+                        .putValue("totalLength", 100)
+                        .putValue("videoPlayer", "vimeo")
+                        .putValue("position", 10)
+                        .putValue("fullScreen", true)
+                        .putValue("bitrate", 50)
+                        .putValue("sound", 80))
+                .integration("nielsen-dcr", nielsenOptions)
+                .build());
+
+        verify(nielsen).end();
+    }
 
   @Test
   public void videoContentStarted() throws JSONException {
@@ -211,7 +257,7 @@ public class NielsenDCRTest {
                     .putValue("position", 70)
                     .putValue("totalLength", 1200)
                     .putValue("loadType", "dynamic")
-                    .putValue("airdate", "2019-08-27T17:00:00Z"))
+                    .putValue("airdate", "2019-08-27T17:00:00.000Z"))
                     .integration("nielsen-dcr", nielsenOptions)
                     .build());
 
@@ -266,7 +312,7 @@ public class NielsenDCRTest {
                     .putValue("position", 70)
                     .putValue("customLength", 1200)
                     .putValue("totalLength", 1100)
-                    .putValue("airdate", "2019-08-27T17:00:00Z"))
+                    .putValue("airdate", "2019-08-27t17:00:00.000z"))
                     .integration("nielsen-dcr", nielsenOptions)
                     .build());
 
@@ -708,6 +754,8 @@ public class NielsenDCRTest {
   @Test
   public void screenWithOptions() throws JSONException {
 
+    settings.customSectionProperty = "customSection";
+
     Map<String, Object> nielsenOptions = new LinkedHashMap<>();
     nielsenOptions.put("segB", "segmentB");
     nielsenOptions.put("segC", "segmentC");
@@ -715,12 +763,13 @@ public class NielsenDCRTest {
 
     integration.screen(
         new ScreenPayload.Builder().anonymousId("foo").name("Home").properties(new Properties() //
-            .putValue("variation", "blue sign up button"))
+            .putValue("variation", "blue sign up button")
+            .putValue("customSection", "mySection"))
             .integration("nielsen-dcr", nielsenOptions)
             .build());
 
     JSONObject expected = new JSONObject();
-    expected.put("name", "Home");
+    expected.put("name", "mySection");
     expected.put("type", "static");
     expected.put("segB", "segmentB");
     expected.put("segC", "segmentC");
@@ -728,6 +777,7 @@ public class NielsenDCRTest {
 
     verify(nielsen).loadMetadata(jsonEq(expected));
   }
+
 
   /**
    * Uses the string representation of the object. Useful for JSON objects.

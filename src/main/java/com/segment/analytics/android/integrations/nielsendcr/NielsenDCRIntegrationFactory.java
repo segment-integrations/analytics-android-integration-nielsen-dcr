@@ -97,12 +97,14 @@ class NielsenDCRIntegrationFactory implements Integration.Factory {
       if (subbrandPropertyName != null && !subbrandPropertyName.isEmpty()) {
         integrationSettings.subbrandPropertyName = subbrandPropertyName;
       }
-
       String contentLengthPropertyName = settings.getString("contentLengthPropertyName");
       if (contentLengthPropertyName != null && !contentLengthPropertyName.isEmpty()) {
         integrationSettings.contentLengthPropertyName = contentLengthPropertyName;
       }
-
+      String customSectionProperty = settings.getString("customSectionProperty");
+      if (customSectionProperty != null && !customSectionProperty.isEmpty()) {
+        integrationSettings.customSectionProperty = customSectionProperty;
+      }
       Boolean sendCurrentTimeLivestream = settings.getBoolean("sendCurrentTimeLivestream", false);
       integrationSettings.sendCurrentTimeLivestream = sendCurrentTimeLivestream;
 
