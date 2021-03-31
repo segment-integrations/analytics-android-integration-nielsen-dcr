@@ -127,6 +127,7 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
       subbrandPropertyName = null;
       contentLengthPropertyName = null;
       customSectionProperty = null;
+      sendCurrentTimeLivestream = false;
     }
   }
 

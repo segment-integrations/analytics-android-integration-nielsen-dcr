@@ -58,14 +58,13 @@ jobs:
       - restore_cache:
                 key: dependencies-{{ .Branch }}-{{ checksum "build.gradle" }}
       - run:
-          name: Set up signature
+          name: Set up key ring file
           command: |
-              if [ "$SIGNATURE_SECRET" == "" ]; then {
-                  echo "Invalid signature configuration"
-                  exit 1
-              } fi
-              base64 -d - <<< "$SIGNATURE_SECRET" > $SIGNATURE_SECRET_FILE
-              gpg --batch --yes --import $SIGNATURE_SECRET_FILE <<< $SIGNATURE_PASSWORD
+            if [ "$SIGNING_PRIVATE_KEY_BASE64" == "" ]; then {
+                echo "Invalid signature configuration"
+                exit 1
+            } fi
+            echo $SIGNING_PRIVATE_KEY_BASE64 | base64 -d > $SIGNATURE_SECRET_FILE
       - run:
           name: Publish SNAPSHOT
           command: ./gradlew uploadArchives
@@ -83,14 +82,13 @@ jobs:
         - restore_cache:
                   key: dependencies-{{ .Branch }}-{{ checksum "build.gradle" }}
         - run:
-            name: Set up signature
+            name: Set up key ring file
             command: |
-                if [ "$SIGNATURE_SECRET" == "" ]; then {
-                    echo "Invalid signature configuration"
-                    exit 1
-                } fi
-                base64 -d - <<< "$SIGNATURE_SECRET" > $SIGNATURE_SECRET_FILE
-                gpg --batch --yes --import $SIGNATURE_SECRET_FILE <<< $SIGNATURE_PASSWORD
+              if [ "$SIGNING_PRIVATE_KEY_BASE64" == "" ]; then {
+                  echo "Invalid signature configuration"
+                  exit 1
+              } fi
+              echo $SIGNING_PRIVATE_KEY_BASE64 | base64 -d > $SIGNATURE_SECRET_FILE
         - run:
             name: Verify tag
             command: |

@@ -13,6 +13,10 @@ buildscript {
 }
 
 // Use -Prelease or $ORG_GRADLE_PROJECT_RELEASE="true" to mark the project as a release
+if (!hasProperty('NIELSEN_USER') && !hasProperty('NIELSEN_AUTHCODE')) {
+  ext.NIELSEN_USER = System.getenv('NIELSEN_USER')
+  ext.NIELSEN_AUTHCODE = System.getenv('NIELSEN_AUTHCODE')
+}
 ext.isRelease = hasProperty('release')
 
 apply plugin: 'com.android.library'
