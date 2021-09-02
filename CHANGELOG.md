@@ -1,3 +1,11 @@
+1.4.0 / 2021-09-02
+==================
+  * Updates `Video Playback Started` to call play and load content metadata.
+  * Updates `Video Playback Interrupted` to call stop.
+  * Maps `Video Playback Exited` to call stop.
+  * Updates `airdate` formatter to detect ISO timestamp with milliseconds.
+  * Adds support for setting to map custom property to Nielsen's page/screen `section`, with fallback to `name` field.
+
 1.3.2 / 2021-03-26
 ==================
   * Add `sendCurrentTimeLivestream` setting to instantiation code in `NielsenDCRIntegrationFactory`.
