@@ -59,21 +59,11 @@ dependencies {
     google()
     maven {
       url 'https://raw.githubusercontent.com/NielsenDigitalSDK/nielsenappsdk-android/master/'
-      credentials {
-        // Make sure you add nielsen_user and nielsen_authCode with respective nielsen provided
-        // values to global gradle.properties file
-        // values to global gradle.properties file
-        // See https://engineeringportal.nielsen.com/docs/Digital_Measurement_Android_Artifactory_Guide
-        username = NIELSEN_USER
-        password = NIELSEN_AUTHCODE
-      }
-      authentication {
-        basic(BasicAuthentication)
-      }
+      // as of 21 sept 2021, its in a public repository
     }
   }
 
-  api 'com.segment.analytics.android:analytics:4.3.1'
+  api 'com.segment.analytics.android:analytics:4.10.0'
   api 'com.nielsenappsdk:global:[6.2,)'
 
   testImplementation 'com.segment.analytics.android:analytics-tests:4.3.1'
