@@ -1,6 +1,8 @@
 package com.segment.analytics.android.integrations.nielsendcr;
 
-import android.support.annotation.NonNull;
+import static com.segment.analytics.internal.Utils.isNullOrEmpty;
+
+import androidx.annotation.NonNull;
 
 import com.nielsen.app.sdk.AppSdk;
 import com.segment.analytics.Properties;
@@ -25,8 +27,6 @@ import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static com.segment.analytics.internal.Utils.isNullOrEmpty;
 
 public class NielsenDCRIntegration extends Integration<AppSdk> {
   public static final Factory FACTORY = NielsenDCRIntegrationFactory.create();
