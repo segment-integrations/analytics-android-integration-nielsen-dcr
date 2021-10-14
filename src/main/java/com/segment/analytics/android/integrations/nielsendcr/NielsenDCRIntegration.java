@@ -1,6 +1,8 @@
 package com.segment.analytics.android.integrations.nielsendcr;
 
-import android.support.annotation.NonNull;
+import static com.segment.analytics.internal.Utils.isNullOrEmpty;
+
+import androidx.annotation.NonNull;
 
 import com.nielsen.app.sdk.AppSdk;
 import com.segment.analytics.Properties;
@@ -9,6 +11,7 @@ import com.segment.analytics.integrations.Integration;
 import com.segment.analytics.integrations.Logger;
 import com.segment.analytics.integrations.ScreenPayload;
 import com.segment.analytics.integrations.TrackPayload;
+import com.segment.analytics.internal.Utils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -24,8 +27,6 @@ import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static com.segment.analytics.internal.Utils.isNullOrEmpty;
 
 public class NielsenDCRIntegration extends Integration<AppSdk> {
   public static final Factory FACTORY = NielsenDCRIntegrationFactory.create();
@@ -596,14 +597,25 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
     }
   }
 
+  private String fetchSectionProperty(Properties properties, String defaultValue) {
+    String sectionProperty = "";
+    String customKey = settings.customSectionProperty;
+    String customSectionNameFromProps = properties.getString(customKey);
+
+    if (!Utils.isNullOrEmpty(customKey) && !Utils.isNullOrEmpty(customSectionNameFromProps)) {
+      sectionProperty = customSectionNameFromProps;
+    } else if (!Utils.isNullOrEmpty(defaultValue)) {
+      sectionProperty = defaultValue;
+    } else {
+      sectionProperty = "Unknown";
+    }
+    return sectionProperty;
+  }
+
   @Override
   public void screen(ScreenPayload screen) {
-    String name;
-    if (settings.customSectionProperty != null) {
-      name = screen.properties().getString(settings.customSectionProperty);
-    } else {
-      name = screen.name();
-    }
+    String name = fetchSectionProperty(screen.properties(), screen.name());
+
     JSONObject metadata = new JSONObject();
 
     Map<String, Object> nielsenOptions = screen.integrations().getValueMap("nielsen-dcr");
@@ -612,7 +624,7 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
     }
 
     try {
-      metadata.put("name", name);
+      metadata.put("section", name);
       metadata.put("type", "static");
 
       // segB and segC are required values, so will send a default value

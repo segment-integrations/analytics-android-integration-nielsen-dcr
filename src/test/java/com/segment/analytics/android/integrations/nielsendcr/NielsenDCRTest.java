@@ -743,7 +743,7 @@ public class NielsenDCRTest {
             .putValue("variation", "blue sign up button"))
             .build());
     JSONObject expected = new JSONObject();
-    expected.put("name", "Home");
+    expected.put("section", "Home");
     expected.put("type", "static");
     expected.put("segB", "");
     expected.put("segC", "");
@@ -769,7 +769,7 @@ public class NielsenDCRTest {
             .build());
 
     JSONObject expected = new JSONObject();
-    expected.put("name", "mySection");
+    expected.put("section", "mySection");
     expected.put("type", "static");
     expected.put("segB", "segmentB");
     expected.put("segC", "segmentC");
