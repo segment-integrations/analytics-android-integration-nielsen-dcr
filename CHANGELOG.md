@@ -1,3 +1,11 @@
+1.4.2 / 2022-06-14
+==================
+* Update Segment SDK to `4.10.4` to comply with google policy [#22](https://github.com/segment-integrations/analytics-android-integration-nielsen-dcr/pull/22)
+
+1.4.1 / 2021-10-14
+==================
+* Fix property name for section [#21](https://github.com/segment-integrations/analytics-android-integration-nielsen-dcr/pull/21)
+
 1.4.0 / 2021-09-02
 ==================
   * Updates `Video Playback Started` to call play and load content metadata.
