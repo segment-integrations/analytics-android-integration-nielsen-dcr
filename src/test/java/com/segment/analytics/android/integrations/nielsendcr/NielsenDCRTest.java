@@ -739,11 +739,17 @@ public class NielsenDCRTest {
   public void screen() throws JSONException {
 
     integration.screen(
-            new ScreenPayload.Builder().anonymousId("foo").name("Home").properties(new Properties() //
-            .putValue("variation", "blue sign up button"))
+        new ScreenPayload.Builder()
+            .anonymousId("foo")
+            .name("Home")
+            .properties(new Properties() //
+                .putValue("variation", "blue sign up button")
+                .putValue("assetId", 1234)
+            )
             .build());
     JSONObject expected = new JSONObject();
     expected.put("section", "Home");
+    expected.put("assetid", "1234");
     expected.put("type", "static");
     expected.put("segB", "");
     expected.put("segC", "");
@@ -755,6 +761,7 @@ public class NielsenDCRTest {
   public void screenWithOptions() throws JSONException {
 
     settings.customSectionProperty = "customSection";
+    settings.contentAssetIdPropertyName = "customContentAssetId";
 
     Map<String, Object> nielsenOptions = new LinkedHashMap<>();
     nielsenOptions.put("segB", "segmentB");
@@ -762,9 +769,14 @@ public class NielsenDCRTest {
     nielsenOptions.put("crossId1", "crossIdValue");
 
     integration.screen(
-        new ScreenPayload.Builder().anonymousId("foo").name("Home").properties(new Properties() //
-            .putValue("variation", "blue sign up button")
-            .putValue("customSection", "mySection"))
+        new ScreenPayload.Builder()
+            .anonymousId("foo")
+            .name("Home")
+            .properties(new Properties() //
+                .putValue("variation", "blue sign up button")
+                .putValue("customSection", "mySection")
+                .putValue("customContentAssetId", 1234)
+            )
             .integration("nielsen-dcr", nielsenOptions)
             .build());
 
@@ -774,6 +786,7 @@ public class NielsenDCRTest {
     expected.put("segB", "segmentB");
     expected.put("segC", "segmentC");
     expected.put("crossId1", "crossIdValue");
+    expected.put("assetid", "1234");
 
     verify(nielsen).loadMetadata(jsonEq(expected));
   }
