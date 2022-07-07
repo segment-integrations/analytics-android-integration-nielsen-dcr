@@ -278,14 +278,7 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
     }
 
     // map settings to Nielsen content metadata fields
-    String contentAssetId;
-    if (settings.contentAssetIdPropertyName != null) {
-      contentAssetId = properties.getString(settings.contentAssetIdPropertyName);
-    } else if (properties.getString("assetId") != null) {
-      contentAssetId = properties.getString("assetId");
-    } else {
-      contentAssetId = properties.getString("contentAssetId");
-    }
+    String contentAssetId = fetchContentAssetId(properties);
     contentMetadata.put("assetid", contentAssetId);
 
     String clientIdPropertyName =
@@ -612,9 +605,22 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
     return sectionProperty;
   }
 
+  private String fetchContentAssetId(@NonNull ValueMap properties) {
+    String contentAssetId;
+    if (settings.contentAssetIdPropertyName != null) {
+      contentAssetId = properties.getString(settings.contentAssetIdPropertyName);
+    } else if (properties.getString("assetId") != null) {
+      contentAssetId = properties.getString("assetId");
+    } else {
+      contentAssetId = properties.getString("contentAssetId");
+    }
+    return contentAssetId;
+  }
+
   @Override
   public void screen(ScreenPayload screen) {
     String name = fetchSectionProperty(screen.properties(), screen.name());
+    String contentAssetId = fetchContentAssetId(screen.properties());
 
     JSONObject metadata = new JSONObject();
 
@@ -626,6 +632,7 @@ public class NielsenDCRIntegration extends Integration<AppSdk> {
     try {
       metadata.put("section", name);
       metadata.put("type", "static");
+      metadata.put("assetid", contentAssetId);
 
       // segB and segC are required values, so will send a default value
       if (nielsenOptions.containsKey("segB")) {
