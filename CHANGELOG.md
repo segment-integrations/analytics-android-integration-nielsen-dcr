@@ -1,3 +1,7 @@
+1.5.0 / 2022-07-08
+==================
+* Allow setting custom assetId for screen events [#23](https://github.com/segment-integrations/analytics-android-integration-nielsen-dcr/pull/23)
+
 1.4.2 / 2022-06-14
 ==================
 * Update Segment SDK to `4.10.4` to comply with google policy [#22](https://github.com/segment-integrations/analytics-android-integration-nielsen-dcr/pull/22)
